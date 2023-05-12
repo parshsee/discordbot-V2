@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "A revamped version of my original discord bot",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -17,7 +19,8 @@
   },
   "homepage": "https://github.com/parshsee/discordbot-V2#readme",
   "dependencies": {
-    "discord.js": "^14.11.0"
+    "discord.js": "^14.11.0",
+    "dotenv": "^16.0.3"
   },
   "devDependencies": {
     "eslint": "^8.40.0"
