@@ -8,6 +8,10 @@
 		"ecmaVersion": 2021,
 		"sourceType": "module"
 	},
+	"ignorePatterns": [
+		"config/deploy-commands.js",
+		"index.js"
+	],
 	"rules": {
 		"arrow-spacing": [
 			"warn",
@@ -18,7 +22,7 @@
 		],
 		"brace-style": [
 			"error",
-			"stroustrup",
+			"1tbs",
 			{
 				"allowSingleLine": true
 			}
