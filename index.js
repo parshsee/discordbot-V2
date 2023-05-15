@@ -33,40 +33,27 @@ for (const file of commandFiles) {
 	}
 }
 
-// Every slash command is an interaction, so to respond to the command, create a listener for the Client#event:interactionCreate event
-// that will exedcute code when your application recieves an interaciton
-// Not every interaction is a slash command, exit the handler if another type is handled
-client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isChatInputCommand()) return;
+// Dynamically retrieve event files
+const eventsPath = new URL('events', import.meta.url);
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
-	// Get the matching command from client.commands Collection based on the interaction.name
-	// client is always available vis interaction.client
-	const command = interaction.client.commands.get(interaction.commandName);
+// Loop over array of event files and dynamically check if the event used with the .once and .on event listeners
+for (const file of eventFiles) {
+	// Dynamically import each event file
+	const filePath = `${eventsPath.toString()}/${file}`;
+	const { default: event } = await import((new URL(filePath)).toString());
 
-	// If no matching command is found, log an error and ignore the event
-	if (!command) {
-		console.error(`No command matching ${interaction.commandName} was found.`);
+	// Client class extends the EventEmitter class, therefore the client object exposes the .on() and .once() methods used to register event listeners
+	// They take two arguments, the name and a callback function, both are defined in each event file as 'name' and 'execute'
+	// The callback function passed takes argument(s) returned by its respective event, collects them in an args array 
+	// 		using the ... rest parameter syntax, then calls event.execute() while passing in the args array using the ... spread syntax. They are used here because different events in discord.js have different numbers of arguments. 
+	//		The rest parameter collects these variable number of arguments into a single array, and the spread syntax then takes these elements and passes them to the execute function.
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
 	}
-
-	// Try to execute the command
-	// Catch and log any error the console
-	try {
-		await command.execute(interaction);
-	} catch (error) {
-		console.error(error);
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-		} else {
-			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-		}
-	}
-});
-
-// When the client is ready, run this code (only once)
-// We use 'c' for the event parameter to keep it separate from the already defined 'client'
-client.once(Events.ClientReady, c => {
-	console.log(`Ready! Logged in as ${c.user.tag}`);
-});
+}
 
 // Log in to Discord with your client's token
 client.login(process.env.TOKEN);
