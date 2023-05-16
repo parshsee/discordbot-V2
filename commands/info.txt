@@ -14,3 +14,47 @@ Step 1
 	- Failing to respond will cause Discord to show that the command failed, even if your bot is performing other actions as a result
 	- Simplest way to acknowledge and respond to an interaction is with the 'interaction.reply()' method
 	- Other methods covered later
+
+Step 2
+- The command handler is implemented in the index file
+
+Step 3
+- The deployment script is run with 'npm run deploy'
+
+
+Command Response Methods
+- https://discordjs.guide/slash-commands/response-methods.html#editing-responses
+- Most common way of sending a response is by using the .reply() method, which acknowledges the interactio and sends a new message in resposne
+- Ephemeral Responses
+	- May not always want everyone who has access to the channel to see a slash command's response
+	- Previously had to DM users to acheive this
+	- Now Discord provides a way to hide response messages from everyone but the executor of the slash command
+	- Ephemeral messages can be set by providing 'ephemeral: true' in the reply options
+		- await interaction.reply({content: 'Only u can see this', ephemeral: true});
+		- await interaction.deferReply({ ephemeral: true});
+		- await interaction.followUp({ content: 'Pong again', ephemeral: true});
+	- It is not possible to edit a reply to change its ephemeral state once the initial response is sent
+- Editing Responses
+	- After you send an initial response, you may want to edit that response for various reasons
+	- Can be achieved with await interaction.editReply('New editted message')
+- Deferred Responses
+	- Discord requires an acknowledgement from your bot within 3 seconds that the interaction was recieved, otherwise Discord considers it a failed interaction
+	- Sometimes the command has to perform tasks that take longer than 3 seconds though
+	- Can now use await interaction.deferReply()
+		- Triggers the '<botname> is thinking...' message and acts as an initial resonse to confirm to Discord that the interaction was recieved successfully.
+		- Also gives you a 15-minute timeframe to complete your tasks before responding
+- Follow-Ups
+	- .reply() and .deferReply() are both initial responses, which tell Discord that your bot successfully recieved the interaction, but cannot be used to send additional messages
+	- After having initially responded to an interaction, you can used the interaction.followUp() to send additional messages
+		- await interaction.reply('Pong')
+		- await interaction.followUp('Pong again');
+	--- Note: after the initial response, an interaction lifetime (token) is valid for 15 mintues, so this is the timeframe in which you can edit the response and send followUp messages
+	--- Note: If you use .followUp() after a .deferReply(), the first followUp will edit the automatic defer message rather than sending a new one
+- Fetching and Deleting Responses
+	- Delete the initial reply
+		- await interaction.deleteReply();
+	- Fetch the Message object
+		- Needed for various reasons, such as adding reactions
+		- const message = await interaction.fetchReply();
+
+Advanced Command Creation
