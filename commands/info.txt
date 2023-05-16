@@ -58,3 +58,52 @@ Command Response Methods
 		- const message = await interaction.fetchReply();
 
 Advanced Command Creation
+- https://discordjs.guide/slash-commands/advanced-creation.html#adding-options
+- Echo.js is a test of various advanced commands learned
+- Adding Options
+	- Application command can have additional options, think of them as arguments to a function, and as a way for the user to provide the additional information the command requires
+	- Options require at minimum a name and description
+		- Same restrictions as naming slash commands: 1-32 characters containing no capital letters, spaces, or symbols other than '-' and '_'
+- Option Types 
+	- By specifying the type of an ApplicationCommandOption using the appropriate emthod you are able to restrict what the user can provide as input and for some options leverage automatic parsing
+	- Some examples of option types available
+		- addStringOption		: accepts primitive value of associated type
+		- addIntergerOption		: accepts primitive value of associated type, only whole numbers
+		- addNumberOption		: accepts primitive value of associated type, accepts whole numbers and decimals
+		- addBooleanOption		: accepts primitive value of associated type
+		- addUserOption			: will show a selection list in the Discord interface for the associated type, list of users in server
+		- addChannelOption		: will show a selection list in the Discord interface for the associated type, list of channels in server
+		- addRoleOption			: will show a selection list in the Discord interface for the associated type, list of roles in server
+		- addMentionableOption	: will show a selection list in the Discord interface for the associated type, list of mentions? in server
+		- addAttachmentOption	: will prompt user to make an upload along with the slash command
+		- addSubcommandOption	: allows you to have branching pathways of subsequent options for your command
+		- addSubcommandGroupOption : same as above
+- Required Options
+	- An additional form of validation to ensure the data your bot recieves is both complete and accurate
+	- This simple addition makes the option required, to ensure the command cannot be executed without a required value
+	- Available to options of any type
+	- option.setRequired(true);
+- Choices
+	- If you would prefer users select from predetermined values rather than free entry, choices can help enforce this
+	- Choices require a name which is displayed to the user for selection
+	- Choices require a value that your bot will recieve when the choice is selected
+	- Available to String, Number, and Integer option types
+	- Maximum # of choices is 25
+	- option.addChoices(
+		{ name: 'Option 1', value: 'valueForBot1' },
+		{ name: 'Option 2', value: 'value2' }
+	)
+- Further Validation
+	- Additional restrictions can still be applied on otherwise free inputs
+	- For String options
+		- .setMaxLength() enforces the max length
+		- .setMinLength() enforces the min length
+	- For Integer and Number options
+		- .setMaxValue() enforces max value
+		- .setMinValue() enforces min value
+	- For Channel options
+		- .addChannelType() can restrict selection to specific channel types e.g ChannelTyp.GuildText (text channels)
+- Subcommands
+	- Allows you to branch a single command to require different options depending on the subcommand chosen
+	- info.js is a test of merging the server.js and user.js using this technique
+	- .addSubcommand(subcommand => ...)
