@@ -121,3 +121,15 @@ Parsing Options
 		- Can retrieve the value of a subcommand option by getting it's name as well
 		- Can then get any additional options of the selected subcommand using the same method as command options
 		- interaction.options.getSubcommand()
+
+Slash Command Permissions
+- Slash commands have their own permissions system, which allows you to set a default level of permissions requried for a user to execute
+- Slash command permissions for guilds are  defaults only and can be altered by guild admins
+- Created ban.js and kick.js as example
+- SlashCommandBuilder has an option to set default permissions required for a member to run a command
+	- .setDefaultMemberPermissions()
+		- Note: Can include OR (|) operator to specify multiple permissions
+	- Can import PermissionFlagsBits from discordjs to be able to reference specific permissions without knowing their code number
+- SlashCommandBuilder has an option to set DM permission to specify is a command can be used in a DM to the bot
+	- .setDMPermission()	: true/false
+	- By default, globally-deployed commands are also available for use in DMs
