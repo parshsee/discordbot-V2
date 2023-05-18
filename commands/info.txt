@@ -107,3 +107,17 @@ Advanced Command Creation
 	- Allows you to branch a single command to require different options depending on the subcommand chosen
 	- info.js is a test of merging the server.js and user.js using this technique
 	- .addSubcommand(subcommand => ...)
+
+Parsing Options
+- How to acces the values of a commands options
+- Created ban.js file as example
+- Modified echo.js and info.js execute functions as examples
+- Command Options
+	- Can retrieve the value of a command option by getting it's name
+	- interaction.options.get____('option-name')
+	- Choices
+		- For choices, getting the value is the same as command options but the value will be one of the predefined ones set in .addChoices()
+	- Subcommands
+		- Can retrieve the value of a subcommand option by getting it's name as well
+		- Can then get any additional options of the selected subcommand using the same method as command options
+		- interaction.options.getSubcommand()

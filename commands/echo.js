@@ -26,7 +26,13 @@ const exportedMethods = {
 					{ name: 'Movie', value: 'gif_movie' },
 				)),
 	async execute(interaction) {
-		await interaction.reply('Pickle!');
+		// Get the value from a string option
+		const input = interaction.options.getString('input');
+		// Get the value from a channel option
+		const channel = interaction.options.getChannel('channel');
+		// Get the value from a choice option, still use getString() but it will be one of the three values specified above
+		const category = interaction.options.getString('category');
+		await interaction.reply(`You said: ${input} --- ${channel} --- ${category}`);
 	},
 };
 
