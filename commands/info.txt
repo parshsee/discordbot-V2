@@ -168,3 +168,20 @@ Deleting Commands
 	- Paste the commandId into 'delete-commands.js' commandId along with the guildId that is being deleted from, run 'npm run delete'
 - Deleting All Commands
 	- To delete all commands, you can pass an empty array when setting commands
+
+Message Components
+Action Rows
+- With componenets API. you can create interactive message components to enhance the funtionality of your slash commands
+- To send any type of component, it must be placed in an action row
+- A message may contain up to 5 rows, each of which has a "width" of 5 units, can be thought of as a flexible 5x5 grid
+- A buttoin will consume one unit of width in a row, while a select menu will consume the whole five units
+- Components Available Right Now
+	- Buttons:		Take up 1 unit of row, 1 out of 5 units 
+	- Select Menus:	Take up whole row
+- Building Action Rows
+	- To create an action row, use the ActionRowBuilder class and the .addComponents() method to add buttons or a select menu
+	- const row = new ActionRowBuilder()
+		.addComponents(component)
+- Sending Action Rows 
+	- Once one or many compnents are inside your row(s) send them in the components property of InteractionReplyOptions
+	- await interaction.reply({ components: [row] });
