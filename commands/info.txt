@@ -82,6 +82,7 @@ Advanced Command Creation
 	- An additional form of validation to ensure the data your bot recieves is both complete and accurate
 	- This simple addition makes the option required, to ensure the command cannot be executed without a required value
 	- Available to options of any type
+	- Note: Required options must be set before not required options, discord will throw error when trying to deploy otherwise
 	- option.setRequired(true);
 - Choices
 	- If you would prefer users select from predetermined values rather than free entry, choices can help enforce this

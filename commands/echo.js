@@ -9,13 +9,6 @@ const exportedMethods = {
 				.setDescription('The input to echo back')
 				.setRequired(true)
 				.setMaxLength(2000))
-		.addChannelOption(option =>
-			option.setName('channel')
-				.setDescription('The chanel to echo into')
-				.addChannelTypes(ChannelType.GuildText))
-		.addBooleanOption(option =>
-			option.setName('embed')
-				.setDescription('Whether or not the echo should be embedded'))
 		.addStringOption(option =>
 			option.setName('category')
 				.setDescription('The gif category')
@@ -24,7 +17,14 @@ const exportedMethods = {
 					{ name: 'Funny', value: 'gif_funny' },
 					{ name: 'Meme', value: 'gif_meme' },
 					{ name: 'Movie', value: 'gif_movie' },
-				)),
+				))
+		.addChannelOption(option =>
+			option.setName('channel')
+				.setDescription('The chanel to echo into')
+				.addChannelTypes(ChannelType.GuildText))
+		.addBooleanOption(option =>
+			option.setName('embed')
+				.setDescription('Whether or not the echo should be embedded')),
 	async execute(interaction) {
 		// Get the value from a string option
 		const input = interaction.options.getString('input');

@@ -14,7 +14,7 @@ const exportedMethods = {
 				.setName('version')
 				.setDescription('Version to search in')
 				.setAutocomplete(true)),
-	async automcomplete(interaction) {
+	async autocomplete(interaction) {
 		// handle the automcompletion response
 		const focusedOption = interaction.options.getFocused(true);
 		let choices;
