@@ -133,3 +133,29 @@ Slash Command Permissions
 - SlashCommandBuilder has an option to set DM permission to specify is a command can be used in a DM to the bot
 	- .setDMPermission()	: true/false
 	- By default, globally-deployed commands are also available for use in DMs
+
+Autocomplete
+- Allows you to dynamically provide a selection of values to the user, based on their input, rather than relying on static choices
+- Created guide.js as example
+- Modifed interactionCreate.js as example
+- Not planning on using much in commands
+- Enabling Autocomplete	
+	- Instead of listing static choices, the option must be set to use autocompletion
+	- option.setAutocomplete(true)
+- Responding to autocomplete interactions
+	- To handle an Autocomplete interaction, use interaction.isAutocomplete()
+	- Used for Event.InteractionCreate,
+	- Is different from interaction.isChatInputCommand()
+- Sending Results 
+	- The AutocompleteInteraction class provides a respond method to send a response
+		- The respond method takes an array of ApplicationCommandOptionChoiceData objects
+		- Passing an empty array will show 'No options match your search'
+		- await interaction.respond()
+	- The CommandInteractionOptionResolver class provides a getFocused method to get the currently focused option's value, which can be used to applying filtering to the choices presented
+		- interaction.options.getFocused()
+- Handling Multiple Autocomplete Options
+	- To distinguish between multiple options, you can pass 'true' into the .getFocused()
+		- Will not return the full focused object instead of just the value
+		- This is used to get the name of  the focused option, allowing for multiple options to each have their own suggestions
+		- const example = interaction.options.getFocused(true)
+		- example.name === 'whateverTheOptionNameIs'
