@@ -160,3 +160,11 @@ Autocomplete
 		- This is used to get the name of  the focused option, allowing for multiple options to each have their own suggestions
 		- const example = interaction.options.getFocused(true)
 		- example.name === 'whateverTheOptionNameIs'
+
+Deleting Commands
+- Deleting Specific Commands
+	- Will need the commandId, which is different for each server (even if its the same command)
+	- Go to Server, -> Server Settings -> Intergrations -> Bots and Apps -> Choose your bot -> Right-click, copy ID
+	- Paste the commandId into 'delete-commands.js' commandId along with the guildId that is being deleted from, run 'npm run delete'
+- Deleting All Commands
+	- To delete all commands, you can pass an empty array when setting commands
