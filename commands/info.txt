@@ -185,3 +185,35 @@ Action Rows
 - Sending Action Rows 
 	- Once one or many compnents are inside your row(s) send them in the components property of InteractionReplyOptions
 	- await interaction.reply({ components: [row] });
+Buttons
+- Modifed ban.js as example
+- Building Buttons
+	- To create a button, use the ButtonBuilderClass and ButtonStyleClass
+	- A button must have a customId, style, and label
+		- customId: A developer-defined string (up to 100 characters), used to ensure you can uniquely define all incoming interactions from the button
+		- style: Visual look
+		- label: Text displayed
+- Sending Buttons
+	- To send your buttons, create an action row and add the buttons as components.
+	- Then send the row in the 'components' property of the reply options
+- Button Styles
+	- Five button styles that can be used
+	- Primary	: Blue color, suitable for most general purpose actions where it's the primary or most significant action expected
+	- Secondary	: Grey color, used for less important actions like 'Cancel'
+	- Success	: Green color, similar to primary button, these are good choice for 'positive' confirmation actions
+	- Danger	: Red color, where the action being confirmed is 'destructive' such as a ban or delete. Using red helps alert the user to the risk of the action
+	- Link		: Grey color, tagged with the 'external link' symbol. These buttons will open the provided link in the browser without sending an interaction to the bot
+- Link Buttons
+	- A little different to other styles
+		- Must have a url
+		- Cannot have a customId
+		- Do not send an interaction event when clicked
+- Disabled Buttons
+	- If you want to prevent a button from being used, but not remove it from the message, you can disable it
+	- .setDisabled(true)
+- Emoji Buttons
+	- If you want to use a guild emoji within ButtonBuilder, you can use .setEmoji method
+	- .setEmoji('123456789012345678')
+
+
+
