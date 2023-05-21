@@ -214,6 +214,44 @@ Buttons
 - Emoji Buttons
 	- If you want to use a guild emoji within ButtonBuilder, you can use .setEmoji method
 	- .setEmoji('123456789012345678')
-
+Select Menus
+- Added pokemon.js as example
+- Building String Select Menus
+	- The standard and most customizable type of select menus is the string select menu
+	- Use the StringSelectMenuBuilder and StringSelectMenuOptionBuilder classes
+	- const select = new StringSelectMenuBuilder()
+		.addOptions(
+			new StringSelectMenuOptionBuilder()
+		)
+- Sending Select Menus
+	- To send your select menu, create an action row and add the menu as components.
+	- Then send the row in the 'components' property of the reply options
+- String Select Menu Options
+	- String select menu options are custom-defined by the user, unlike other menu types
+	- A select menu must have a customId and options
+		- customId: A developer-defined string (up to 100 characters), used to ensure you can uniquely define all incoming interactions from the button
+		- options: Choices for the user to pick from
+		- placeholder: Initial value user sees before selecting a choice
+	- A select menu option mmust have at minimum a label and value
+		- label	: Shown to the user
+		- value	: Is included in the interaction and sent to the bot
+	- In addition to these, each option can also include a description, emoji, and be set to be selected by default
+		- description	: The description shown to the user
+		- emoji			: An emoji value
+		- .setDefault(true)	: Shows this option first (can be used instead of placeholder for select menu)
+- Auto-Populating Select Menus
+	- Although the String select menu with it's user-defined options is the most customizable, there are four other types of select menus
+		- UserSelectMenuBuilder
+		- RoleSelectMenuBuilder
+		- MentionableSelectMenuBuilder
+		- ChannelSelectMenuBuilder
+			- This builder can be configured to show only specific channel types using: .setChannelTypes()
+	- The above four select menus auto-populate with their corresponding Discord entities
+- Multi-Selects
+	- Where slash command options fall behind is in their single-select limiation on User, Role, and Channel option types
+	- Select menus can support multi-select with the .setMinValues() and .setMaxValues()
+		- .setMinValues()
+		- .setMaxValues()
+	- When these values are set, users can select multiple items and the interaction will be sent with all the selected values only when the user clicks outside the select menu
 
 
