@@ -253,5 +253,52 @@ Select Menus
 		- .setMinValues()
 		- .setMaxValues()
 	- When these values are set, users can select multiple items and the interaction will be sent with all the selected values only when the user clicks outside the select menu
-
-
+Component Interactions
+- Modifed ban.js and pokemon.js as examples
+- Every button click or select menu selection on a component send by the bot fires an interaction, triggering the interactionCreate event
+- How you will handle this will likely depend on the purpose of the components
+- Options include
+	- Waiting for a single interaction via .awaitMessageComponent
+	- Listening for multiple interactions over a period of time using an InteractionCollector
+	- Creating a permanent component handler in the .interactionCreate event
+- Responding to Component Interactions
+	- Like all other interactions, message component interactions require a response within 3 seconds or Discord will treat it as failed
+	- Like slash commands, all types of message component interactions support the .reply(), .deferReply(), .editReply(), and .followUp() methods, with the option for these responses to be ephemeral
+		- They function identically to how they do for slash commands
+	- Component interactions also support two additional methods of response: updates and deferred updates
+	- Updates
+		- .update()
+		- Acknowledges the interaction by editing the message on which the component was attached
+		- This method should be preferred to calling .editReply() on the interaction interaction which sent the components
+		- Like .editReply(), .update() cannot be used to change the ephemeral state of a message
+		- Once .update() has been called, future messages can be sent by calling .followUp() or  edits can be made by calling .editReply() on the component interaction
+	- Deferred Updates
+		- .deferUpdate()
+		- Acknowledges the interaction and resets the message state
+		- This method can be used to supress the need for further responses, however it's encouraged to provide meaningful feedback to users via .update() or ephemeral .reply() at least
+		- Once .deferUpdate() has been called, future messages can be sent by calling .followUp() or  edits can be made by calling .editReply() on the component interaction
+- Awaiting Components
+	- Modified ban.js
+	- A good example situation to use this is where your bot is expecting to recieve a single response
+	- Begin by storing the InteractionResponse as a variable (normally called response), and calling .awaitMessageComponent() on the instance
+		- This method returns a Promise that resolves when any interaction passes its filter (if provided) or throws if none are recived before the timeout
+			- If it throws, remove the components and notify the user
+	- When the confirmation is collected, check which button was clicked and perform the appropriate action
+- Component Collectors
+	- Modified pokemon.js as example
+	- For situations where you want to collect multiple interactions, a Collector is better suited that awaiting singular interactions
+	- Begin by storing the InteractionResponse as a variable (normally called response), and calling .createMessageComponentCollector() on the instance
+		- This method returns an InteractionCollector that will fire its event 'collect' whenever an interaction passes its filter (if provided, not provided for pokemon example)
+		- Specific to pokemon.js 
+			- In the collect event, each interaction is a StringSelectMenuInteraction (because) the componentType option was provided
+			- The selected values are available view .values property
+- The Client interactionCreate Event
+	- Did not make changes for, dont plan on using
+	- You may wish to have a listener setup to respond to permanent button or select menu features for your guild (example: the same button appearing on all prompts i.e a cancel button)
+	- For this, returning to the event 'interactionCreate' is the best approach
+	- The only changes that need to be made in interactionCreate.js
+		- Add an else if statement checking for if(interaction.isButton())
+			- If it passes, than the interaction was a button click, perform the needed operations inside that if block
+		- Add an else if statement checking for if(interaction.isStringSelectMenu())
+			- If it passes, than the interaction was a String select menu, perform the needed operations inside that if block
+			- Will need if checks for other select menu types

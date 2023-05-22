@@ -53,12 +53,46 @@ const exportedMethods = {
 			.addComponents(cancel, confirm, linkExample, disabledExample);
 
 		// Replying with a message and components
-		// Becomes an object, with content and components
-		await interaction.reply({
+		// Reply becomes an object, with content and components
+		// Store the response as a variable (awaiting components topic)
+		const response = await interaction.reply({
 			content: `Banning ${target.username} for reason: ${reason}`,
 			components: [row],
 		});
-		await interaction.guild.members.ban(target);
+
+		// Create a filter (function expression) to ensure that only the user who triggered the original interaction can use the buttons
+		const collectorFilter = i => i.user.id === interaction.user.id;
+
+		try {
+			// Wait for an interaction with the message component (that passes the filter) in the given time
+			// time: in milliseconds
+			const confirmation = await response.awaitMessageComponent({
+				filter: collectorFilter,
+				time: 60000,
+			});
+
+			// If the confirmation is collected (passes filter in given time), check which button was clicked
+			// Then perform the appropriate action
+			if (confirmation.customId === 'confirm') {
+				// Don't actually want to ban anyone lol
+				// await interaction.guild.members.ban(target);
+				await confirmation.update({
+					content: `${target.username} has been banned for reason: ${reason}`,
+					components: [],
+				});
+			} else if (confirmation.customId === 'cancel') {
+				await confirmation.update({
+					content: 'Action cancelled',
+					components: [],
+				});
+			}
+		} catch (error) {
+			// If error is thrown (most likely timeout), edit the reply and remove the components
+			await interaction.editReply({
+				content: 'Confirmation not recieved within 1 minute, cancelling',
+				components: [],
+			});
+		}
 	},
 };
 
