@@ -302,3 +302,13 @@ Component Interactions
 		- Add an else if statement checking for if(interaction.isStringSelectMenu())
 			- If it passes, than the interaction was a String select menu, perform the needed operations inside that if block
 			- Will need if checks for other select menu types
+
+Additional Information
+- Modals			: https://discordjs.guide/interactions/modals.html
+- Context Menus 	: https://discordjs.guide/interactions/context-menus.html
+- FAQ				: https://discordjs.guide/popular-topics/faq.html
+- Collectors		: https://discordjs.guide/popular-topics/collectors.html
+- Gateway intents	: https://discordjs.guide/popular-topics/intents.html
+- Errors			: https://discordjs.guide/popular-topics/errors.html
+- Reactions			: https://discordjs.guide/popular-topics/reactions.html
+- Threads			: https://discordjs.guide/popular-topics/threads.html
