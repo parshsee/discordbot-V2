@@ -4,20 +4,30 @@ import * as fs from 'fs';
 dotenv.config();
 
 const commands = [];
-// Grab all the command files from the commands directory, created earlier
 
-// Grab all the command files from the commands directory you created earlier
-const commandsPath = new URL('../commands/', import.meta.url);
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+// Grab all the command folders from the commands directory you created earlier
+// Ignore the learning folder commands, they were used to understand Discord.js functions
+const foldersPath = new URL('../commands/', import.meta.url);
+const commandFolders = fs.readdirSync(foldersPath).filter(folder => !folder.includes('learning'));;
 
-// Grab the SlashCommandBuilder#toJSON output of each command's data for deployment
-for (const file of commandFiles) {
-	// Using ES6 await import to dynamically import command files
-	const { default: command } = await import((new URL(file, commandsPath)).toString());
-	if ('data' in command && 'execute' in command) {
-		commands.push(command.data.toJSON());
-	} else {
-		console.log(`[WARNING] The command at asdasd is missing a requried "data" or "execute" property.`);
+// Loop over the array of command folders
+// Create the URL path and get the array of command files from each command folder
+for (const folder of commandFolders) {
+	const commandsPath = new URL(folder, foldersPath);
+	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+	// Loop over the array of command files
+	// Create the filePath for the file and import it
+	// Check that the command file has the necessary 'data' and 'execute' functions before adding to commands array
+	for (const file of commandFiles) {
+		// Using ES6 await import to dynamically import command files
+		const filePath = `${commandsPath.toString()}/${file}`;
+		const { default: command } = await import((new URL(filePath)).toString());
+		if ('data' in command && 'execute' in command) {
+			commands.push(command.data.toJSON());
+		} else {
+			console.log(`[WARNING] The command at asdasd is missing a requried "data" or "execute" property.`);
+		}
 	}
 }
 

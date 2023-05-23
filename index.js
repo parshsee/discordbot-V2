@@ -16,22 +16,32 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 // Collection is used to store and efficently retrieve commands for execution
 client.commands = new Collection();
 
-// Dynamically retrieve command files
-const commandsPath = new URL('commands', import.meta.url);
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+// Dynamically retrieve command folders
+// Ignore the learning folder commands, they were used to understand Discord.js functions
+const foldersPath = new URL('commands/', import.meta.url);
+const commandFolders = fs.readdirSync(foldersPath).filter(folder => !folder.includes('learning'));
 
-// Loop over array of command files and dynamically set each command into client.commands Collection
-// Also checks that each command file has at least the 'data' and 'execute' properties
-for (const file of commandFiles) {
-	const filePath = `${commandsPath.toString()}/${file}`;
-	const { default: command } = await import((new URL(filePath)).toString());
-	// Set a new item in the Collection with the key as the command name and vthe value as the exported module
-	if ('data' in command && 'execute' in command) {
-		client.commands.set(command.data.name, command);
-	} else {
-		console.log(`[Warning] The command at ${filePath} is missing a required "data" or "execute" property.`);
+// Loop over the array of command folders
+// Create the URL path and get the array of command files from each command folder
+for (const folder of commandFolders) {
+	const commandsPath = new URL(folder, foldersPath);
+	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+	// Loop over the array of command files
+	// Create the filePath for the file and import it
+	for (const file of commandFiles) {
+		// Using ES6 await import to dynamically import command files
+		const filePath = `${commandsPath.toString()}/${file}`;
+		const { default: command } = await import((new URL(filePath)).toString());
+		// Set a new item in the Collection with the key as the command name and vthe value as the exported module
+		if ('data' in command && 'execute' in command) {
+			client.commands.set(command.data.name, command);
+		} else {
+			console.log(`[Warning] The command at ${filePath} is missing a required "data" or "execute" property.`);
+		}
 	}
 }
+
 
 // Dynamically retrieve event files
 const eventsPath = new URL('events', import.meta.url);
