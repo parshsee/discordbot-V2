@@ -1,7 +1,30 @@
-# Immature Bot
+# Immature Bot V2
 
 ## Description
-This is my first Discord bot which serves to help me learn JavaScript and MongoDB as well as providing useful functions for my peers on their Discord server. 
+This is an updated version of my [first Discord bot](https://github.com/parshsee/discordbot) that contains some notable changes and improvements as detailed below.
+Similar to the first bot, this will also utilize JavaScript and MongoDB as well as the same APIs and provide useful functons for my friends on their respective servers.
+
+### Changes from V1 to V2
+- The major change for this bot is the utilization of Discord.js version 14 instead of version 12.
+	- This allows the bot to use slash commands, create/monitor server events, create/monitor threads and more
+		- The bot will no longer monitor the chat messages for specific commands (with prefix '!') and instead rely on slash commands
+		- This change was made in accordance with [Discords push to use slash commands over mentions](https://support-dev.discord.com/hc/en-us/articles/6025578854295)
+	- While learning the changes, I created the template for this bot following the offical Discord [Getting Started Guide](https://discordjs.guide/#before-you-begin) which varied in how the original bot was setup
+		- This allowed me create command and event handling and understand more of the new features available to developers
+		- My notes and sample code files are available on this repo in the learning folder
+- Due to Discords constant improvement, some commands have been removed, modified, or bundled as a singular slash command
+	- Removed
+		- Commands			: No longer needed
+	- Modified
+		- Events			: Discord allows users to create their own events, this will be repurposed to use those events. It will view and create server events, as well as remind participants of upcoming events.
+		- Info				: Renamed to game-info
+	- Bundled
+		- Bdays	: This command will now be able to add, remove, list, and show specific birthday. This combines bday and bdays commands
+		- Quotes : This command will now be able to add, remove, list, and show specific quote. This combines quote and quotes commands
+		- Freestuff : This command will now be able to add, claim, list, and show specific game. This combines add, claim, and freestuff commands
+- Changes to be Considered
+	- Removing the delete command
+	- Removing the leaderboard command
 
 ### Technologies
 - Discord
@@ -10,20 +33,14 @@ This is my first Discord bot which serves to help me learn JavaScript and MongoD
 - MongoDB
 
 ## Bot Commands
-- [add](#add)
-- [bday](#bday)
 - [bdays](#bdays)
-- [claim](#claim)
-- [commands](#commands)
 - [dailycute](#dailycute)
 - [delete](#delete)
-- [event](#event)
 - [events](#events)
 - [freestuff](#freestuff)
-- [info](#info)
+- [game-info](#game-info)
 - [leaderboard](#leaderboard)
 - [meme](#meme)
-- [quote](#quote)
 - [quotes](#quotes)
 - [twitch](#twitch)
 - [stats](#stats)
