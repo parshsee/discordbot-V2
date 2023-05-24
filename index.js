@@ -10,7 +10,13 @@ dotenv.config();
 // Create a new client instance
 // GatewayIntentBits.Guilds intents is necessary for discord.js client to ensure that it
 // caches for guilds, channels, and rolesw are populated and available
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+	intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMembers,			// Priviledged Intents
+		GatewayIntentBits.GuildPresences		// Priviledged Intents
+	]
+});
 
 // The Collection class extends JS's native Map class, and includes more extensive, useful functionality
 // Collection is used to store and efficently retrieve commands for execution
