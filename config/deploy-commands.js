@@ -41,7 +41,7 @@ const rest = new REST().setToken(process.env.TOKEN);
 
 		// The put method is used to fully refresh all commands in the guild with the current set
 		const data = await rest.put(
-			Routes.applicationGuildCommands(process.env.DISCORD_CLIENTID, process.env.DISCORD_GUILDID),
+			Routes.applicationGuildCommands(process.env.DISCORD_DEV_CLIENTID, process.env.DISCORD_DEV_GUILDID),
 			{ body: commands },
 		);
 
@@ -49,7 +49,7 @@ const rest = new REST().setToken(process.env.TOKEN);
 		// Will be available in all the guilds the application has the 'application.commands' scope authorized in, and in direct messages by default
 		// Guild-based deployment of commands is best suited for development and testing in your own personal server. Once you're satisfied that it's ready, deploy the command globally to publish it to all guilds that your bot is in.
 		// const data = await rest.put(
-		// 	Routes.applicationCommands(process.env.DISCORD_CLIENTID),
+		// 	Routes.applicationCommands(process.env.DISCORD_DEV_CLIENTID),
 		// 	{ body: commands },
 		// );
 
