@@ -85,7 +85,7 @@ Show information on the server or on a specific user from their user id or menti
 
 ## References
 ### APIs Used
-Dailycute API: 	https://some-random-api.ml/
+Dailycute API: 	https://some-random-api.com/
 
 Info API: https://api-v3.igdb.com/
 
