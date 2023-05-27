@@ -28,8 +28,6 @@ const memeAPI = async (subreddit) => {
 		// Destructure data into memeInfo const
 		const { data: memeInfo } = await axios.get(memeURL);
 
-		console.log(memeInfo);
-
 		return memeInfo;
 	} catch (error) {
 		console.error(error);
