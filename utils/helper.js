@@ -8,13 +8,7 @@ const dailyCuteAPI = async (animal) => {
 		const animalInfoURL = process.env.ANIMAL_INFO_BASE_URL + animal;
 		// Axios call to get information
 		// Destructure data into animalInfo const
-		const { data: animalInfo } = await axios({
-			url: animalInfoURL,
-			method: 'get',
-			headers: {
-				'Accept': 'application/json',
-			},
-		});
+		const { data: animalInfo } = await axios.get(animalInfoURL);
 
 		// Check if image is from cdn host, if true append .png to the URL
 		if (animalInfo.image.includes('/cdn.')) animalInfo.image = animalInfo.image + '.png';
@@ -26,6 +20,24 @@ const dailyCuteAPI = async (animal) => {
 	}
 };
 
+const memeAPI = async (subreddit) => {
+	try {
+		// Create API URL
+		const memeURL = process.env.MEME_API + subreddit;
+		// Axios call to get information
+		// Destructure data into memeInfo const
+		const { data: memeInfo } = await axios.get(memeURL);
+
+		console.log(memeInfo);
+
+		return memeInfo;
+	} catch (error) {
+		console.error(error);
+		throw { code: 601, msg: 'Could not connect or API threw error' };
+	}
+};
+
 export {
 	dailyCuteAPI,
+	memeAPI,
 };
