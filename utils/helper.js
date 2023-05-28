@@ -35,7 +35,44 @@ const memeAPI = async (subreddit) => {
 	}
 };
 
+/* Note: Technically don't need async or try/catch for this call
+	since not making an axios or DB call
+*/
+const memeCreationAPI = async (image, topText, bottomText) => {
+	try {
+		// Convert special characters for the top and bottom text
+		topText = filterText(topText);
+		bottomText = filterText(bottomText);
+		// Create API URL
+		const memeURL = `${process.env.MEME_CREATION_API}/${topText}/${bottomText}.png?background=${image}`;
+
+		return memeURL;
+	} catch (error) {
+		console.error(error);
+		throw { code: 601, msg: 'Could not connect or API threw error' };
+	}
+};
+
+// =============================== Helper Functions ===============================
+
+const filterText = (text) => {
+	// Use .replaceAll to filter special characters
+	const filteredText = text
+		.replaceAll('_', '__')
+		.replaceAll(' ', '_')
+		.replaceAll('?', '~q')
+		.replaceAll('%', '~p')
+		.replaceAll('#', '~h')
+		.replaceAll('/', '~s')
+		.replaceAll('"', '\'\'')
+		.replaceAll('-', '--');
+
+
+	return filteredText;
+};
+
 export {
 	dailyCuteAPI,
 	memeAPI,
+	memeCreationAPI,
 };

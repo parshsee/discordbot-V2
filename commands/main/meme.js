@@ -1,6 +1,5 @@
 import { AttachmentBuilder, SlashCommandBuilder } from 'discord.js';
 import * as helper from '../../utils/helper.js';
-import { spoiler } from 'discord.js';
 
 const exportedMethods = {
 	data: new SlashCommandBuilder()
@@ -50,7 +49,29 @@ const exportedMethods = {
 			}
 
 		} else if (interaction.options.getSubcommand() === 'create') {
-			console.log('hello');
+			// Get the required attachment
+			const memeImage = interaction.options.getAttachment('image');
+			// Get the optional top and bottom text, else set them to empty spaces (needed for constructing API url)
+			const topText = interaction.options.getString('top-text') ?? ' ';
+			const bottomText = interaction.options.getString('bottom-text') ?? ' ';
+
+			try {
+				// Call the API from helper file
+				const response = await helper.memeCreationAPI(memeImage.attachment, topText, bottomText);
+				// Create the image attachment from response
+				const meme = new AttachmentBuilder(response);
+				// Since interaction was deferred initially, can't use .reply() need to use .editReply() to update the interaction with the info
+				await interaction.editReply({
+					content: 'Here is your custom meme!',
+					files: [meme],
+				});
+			} catch (error) {
+				console.error(error);
+				await interaction.editReply({
+					content: 'There was an error while executing this command!',
+					ephemeral: true,
+				});
+			}
 		}
 	},
 };
