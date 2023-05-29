@@ -73,3 +73,25 @@ for (const file of eventFiles) {
 
 // Log in to Discord with your client's token
 client.login(process.env.TOKEN);
+
+// Logging unhandled promise rejection errors sent by Discord API
+// Use below links to understand error response and status code meaning from response
+// https://discordjs.guide/popular-topics/errors.html#method
+// https://discord.com/developers/docs/topics/opcodes-and-status-codes#json
+process.on('unhandledRejection', error => {
+	console.error('Unhandled promise rejection:', error);
+});
+
+// When received SIGNAL TERMINATION (sent when Heroku closes app, for update or other)
+// Log the Twitch Token and continue to close app
+process.on('SIGTERM', () => {
+	console.log(`Twitch Token: ${process.env.TWITCH_TOKEN}`);
+	process.exit();
+});
+
+// When recieved SIGNAL INTERUPPTED (sent when CTRL + C is used)
+// Log the Twitch Token and continue to close app
+process.on('SIGINT', () => {
+	console.log(`Twitch Token: ${process.env.TWITCH_TOKEN}`);
+	process.exit();
+});
