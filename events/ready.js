@@ -9,6 +9,16 @@ const exportedMethods = {
 		client.user.setUsername('ImmatureBot V2');
 		client.user.setActivity('you', { type: ActivityType.Watching });
 
+		/* TODO:
+			Check if all necessary channels exist
+			If not, send message to default/first channel asking to create required channels?
+				- Could use buttons to confirm that 'x, y, z, etc' channels would be created
+				- Could have message just say to use /create-required-channels command instead
+					- make usable by admin/mods only
+			Create job schedules for all necessary DB functions once implemented
+				- Birthday, Event(?), Twitch Token, Streamer
+		*/
+
 		console.log(`Ready! Logged in as ${client.user.tag}`);
 	},
 };
