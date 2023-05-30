@@ -13,6 +13,8 @@ const dailyCuteAPI = async (animal) => {
 		// Check if image is from cdn host, if true append .png to the URL
 		if (animalInfo.image.includes('/cdn.')) animalInfo.image = animalInfo.image + '.png';
 
+		console.log('Call to dailyCute API: Successful');
+
 		return animalInfo;
 	} catch (error) {
 		console.error(error);
@@ -27,6 +29,8 @@ const memeAPI = async (subreddit) => {
 		// Axios call to get information
 		// Destructure data into memeInfo const
 		const { data: memeInfo } = await axios.get(memeURL);
+
+		console.log('Call to meme API: Successful');
 
 		return memeInfo;
 	} catch (error) {
@@ -46,6 +50,8 @@ const memeCreationAPI = async (image, topText, bottomText) => {
 		// Create API URL
 		const memeURL = `${process.env.MEME_CREATION_API}/${topText}/${bottomText}.png?background=${image}`;
 
+		console.log('Call to memeCreation API: Successful');
+
 		return memeURL;
 	} catch (error) {
 		console.error(error);
@@ -54,7 +60,67 @@ const memeCreationAPI = async (image, topText, bottomText) => {
 };
 
 const gameAPI = async (gameName, gameYear) => {
+	try {
+		// Create the initial search query
+		// Search for the game name, return info on cover (specifically url), game_modes (specifically name), summary, name of EACH game,
+		// Cover.url removes call to game cover endpoint to retrieve url
+		// Game_modes.name removes call to game modes endpoint to retrieve each game mode
+		// Make sure the cover isn't null (usually indicates game infomration is missing)
+		let searchQuery = `search "${gameName}"; fields cover.url, game_modes.name, name, summary; where cover != null`;
+		// If given a game year add that to the search query
+		// Else close the query
+		if (gameYear) {
+			searchQuery = searchQuery + ` & release_dates.y = ${gameYear};`;
+		} else {
+			searchQuery = searchQuery + ';';
+		}
+		// Axios call to get information
+		// Returns array of objects, each object is a game with similar name
+		let { data: gameInfo } = await axios({
+			url: process.env.GAME_API,
+			method: 'POST',
+			headers: {
+				Accept: 'application/json',
+				'Client-ID': process.env.TWITCH_CLIENT_ID,
+				Authorization: `Bearer ${process.env.TWITCH_TOKEN}`,
+			},
+			// In the body (data), use the search query provided
+			data: searchQuery,
+		});
 
+		// Filter out the search results for the one(s) where the name exactly matches the search term
+		gameInfo = gameInfo.filter(game => game.name.toLowerCase() === gameName);
+
+		// If the search has no results (empty array)
+		// Return error and errorMessage
+		if (!gameInfo.length) {
+			const returnObj = {
+				error: true,
+				errorMessage: 'Search Result Failed: Game not in Database',
+			};
+			console.log('Call to IGDB API: Successful');
+			return returnObj;
+		}
+
+		// Set the variable to the first object in array
+		// Should be most accurate to what the user searched
+		gameInfo = gameInfo[0];
+
+		// Go through each mode object in game_modes array
+		// Change it to an array of just the mode name (removes id key/value)
+		gameInfo.game_modes = gameInfo.game_modes.map(mode => mode.name);
+
+		// Format game cover to proper URL
+		gameInfo.cover = `https:${gameInfo.cover.url}`;
+
+		console.log('Call to IGDB API: Successful');
+
+		return gameInfo;
+
+	} catch (error) {
+		console.error(error);
+		throw { code: 601, msg: 'Could not connect or API threw error' };
+	}
 };
 
 /*	Twitch Token has an expiration timer
