@@ -1,6 +1,10 @@
 import axios from 'axios';
+import { ButtonBuilder, ButtonStyle } from 'discord.js';
 import * as dotenv from 'dotenv';
 dotenv.config();
+
+
+// =============================== API Functions ===============================
 
 const dailyCuteAPI = async (animal) => {
 	try {
@@ -158,6 +162,20 @@ const twitchTokenValidator = async () => {
 	}
 };
 
+// =============================== Buttons ===============================
+
+// Create confirm button
+const confirm = new ButtonBuilder()
+	.setCustomId('confirm')
+	.setLabel('Confirm')
+	.setStyle(ButtonStyle.Primary);
+
+// Create cancel button
+const cancel = new ButtonBuilder()
+	.setCustomId('cancel')
+	.setLabel('Cancel')
+	.setStyle(ButtonStyle.Secondary);
+
 // =============================== Helper Functions ===============================
 
 const filterText = (text) => {
@@ -210,4 +228,6 @@ export {
 	memeCreationAPI,
 	gameAPI,
 	twitchTokenValidator,
+	confirm,
+	cancel,
 };
