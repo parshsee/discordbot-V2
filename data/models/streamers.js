@@ -5,8 +5,8 @@ const streamersSchema = mongoose.Schema({
 	streamerName: { type: String, required: true },
 	gameTitle: { type: String, trim: true },
 	status: { type: String, trim: true },
-});
+}, { autoIndex: false, autoCreate: false });
 
-// export default mongoose.model('Streamers', streamersSchema);
+export default mongoose.model('Streamers', streamersSchema);
 
-export default streamersSchema;
+// export default streamersSchema;

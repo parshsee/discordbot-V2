@@ -1,17 +1,17 @@
 import mongoose from 'mongoose';
-import birthdaysSchema from './birthdays.js';
-import eventsSchema from './events.js';
-import gamesSchema from './games.js';
-import quotesSchema from './quotes.js';
-import streamersSchema from './streamers.js';
+import birthdays from './birthdays.js';
+import events from './events.js';
+import games from './games.js';
+import quotes from './quotes.js';
+import streamers from './streamers.js';
 
 const guildSchema = new mongoose.Schema({
 	_id: { type: String, required: true },
-	birthdays: { type: [birthdaysSchema] },
-	events: { type: [eventsSchema] },
-	games: { type: [gamesSchema] },
-	quotes: { type: [quotesSchema] },
-	streamers: { type: [streamersSchema] },
+	birthdays: { type: [birthdays.schema] },
+	events: { type: [events.schema] },
+	games: { type: [games.schema] },
+	quotes: { type: [quotes.schema] },
+	streamers: { type: [streamers.schema] },
 });
 
 export default mongoose.model('guilds', guildSchema);

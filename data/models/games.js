@@ -5,8 +5,8 @@ const gamesSchema = mongoose.Schema({
 	gameKey: { type: String, required: true, trim: true, unique: true },
 	gameType: { type: String, required: true, trim: true },
 	codeType: { type: String, required: true, trim: true },
-});
+}, { autoIndex: false, autoCreate: false });
 
-// export default mongoose.model('Games', gamesSchema);
+export default mongoose.model('Games', gamesSchema);
 
-export default gamesSchema;
+// export default gamesSchema;
