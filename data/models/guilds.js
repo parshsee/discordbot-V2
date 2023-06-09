@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
-import birthdays from './birthdays.js';
-import events from './events.js';
-import games from './games.js';
-import quotes from './quotes.js';
-import streamers from './streamers.js';
+import Birthdays from './birthdays.js';
+import Events from './events.js';
+import Games from './games.js';
+import Quotes from './quotes.js';
+import Streamers from './streamers.js';
 
 // Create the guild schema (template)
 // Override the auto-generated _id field to pass in our own value
@@ -14,11 +14,11 @@ import streamers from './streamers.js';
 // Each document created with this schema will represent a different guild
 const guildSchema = new mongoose.Schema({
 	_id: { type: String, required: true },
-	birthdays: { type: [birthdays.schema] },
-	events: { type: [events.schema] },
-	games: { type: [games.schema] },
-	quotes: { type: [quotes.schema] },
-	streamers: { type: [streamers.schema] },
+	birthdays: { type: [Birthdays.schema] },
+	events: { type: [Events.schema] },
+	games: { type: [Games.schema] },
+	quotes: { type: [Quotes.schema] },
+	streamers: { type: [Streamers.schema] },
 });
 
 // Export the schema as a Model to use primarily for constructor
