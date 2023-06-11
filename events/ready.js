@@ -1,6 +1,7 @@
 import { Events, ActivityType } from 'discord.js';
 import { scheduleJob } from 'node-schedule';
 import * as helper from '../utils/helper.js';
+import dbConnection from '../data/mongooseConnection.js';
 
 // When the client is ready, run this code (only once)
 // We use 'c' for the event parameter to keep it separate from the already defined 'client'
@@ -10,6 +11,9 @@ const exportedMethods = {
 	async execute(client) {
 		client.user.setUsername('ImmatureBot V2');
 		client.user.setActivity('you', { type: ActivityType.Watching });
+
+		// Connect to database
+		await dbConnection();
 
 		/* TODO:
 			Check if all necessary channels exist
