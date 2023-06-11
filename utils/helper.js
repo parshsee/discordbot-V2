@@ -162,6 +162,38 @@ const twitchTokenValidator = async () => {
 	}
 };
 
+const twitchUserAPI = async (username) => {
+	try {
+		// Trim the username to remove whitespaces
+		username = username.trim();
+
+		// Axios call to get user info
+		// Destructure data to userInfo const
+		// Returns object within an object (data.data), contains the users information
+		const { data: userInfo } = await axios({
+			url: process.env.TWITCH_USER_API,
+			method: 'GET',
+			headers: {
+				Accept: 'application/json',
+				Authorization: `Bearer ${process.env.TWITCH_TOKEN}`,
+				'Client-ID': process.env.TWITCH_CLIENT_ID,
+			},
+			params: {
+				login: username,
+			},
+		});
+
+		console.log('Call to Twitch User API: Successful');
+
+		// Return only the user information or an empty array if no users found
+		return userInfo.data;
+
+	} catch (error) {
+		console.log('Call to Twitch User API Failed:', error);
+		throw { code: 601, msg: 'Could not connect or API threw error' };
+	}
+};
+
 // =============================== Buttons ===============================
 
 // Create confirm button
@@ -228,6 +260,7 @@ export {
 	memeCreationAPI,
 	gameAPI,
 	twitchTokenValidator,
+	twitchUserAPI,
 	confirm,
 	cancel,
 };
