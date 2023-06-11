@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ButtonBuilder, ButtonStyle } from 'discord.js';
+import { ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -208,6 +208,16 @@ const cancel = new ButtonBuilder()
 	.setLabel('Cancel')
 	.setStyle(ButtonStyle.Secondary);
 
+// Create the initial embed layout
+const createIntitialEmbed = interaction => {
+	const embed = new EmbedBuilder()
+		.setColor('#0099ff')
+		.setTimestamp()
+		.setAuthor({ name: 'Immature Bot', iconURL: interaction.client.user.avatarURL(), url: 'https://github.com/parshsee/discordbot-V2' })
+		.setFooter({ text: 'Immature Bot' });
+	return embed;
+};
+
 // =============================== Helper Functions ===============================
 
 const filterText = (text) => {
@@ -263,4 +273,5 @@ export {
 	twitchUserAPI,
 	confirm,
 	cancel,
+	createIntitialEmbed,
 };
