@@ -158,6 +158,8 @@ const twitchTokenValidator = async () => {
 			console.log('Token Expired, Retrieving New Token');
 			// If the token is expired, call the function to get new token
 			await getTwitchToken();
+		} else {
+			console.log(error.response);
 		}
 	}
 };
