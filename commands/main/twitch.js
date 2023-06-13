@@ -17,7 +17,7 @@ const exportedMethods = {
 			subcommand
 				.setName('remove')
 				.setDescription('Remove a streamer (by their ID) to stop tracking them')
-				.addIntegerOption(option => option.setName('id').setDescription('The ID of the streamer').setRequired(true)))
+				.addIntegerOption(option => option.setName('id').setDescription('The ID of the streamer').setMinValue(1).setRequired(true)))
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('list')
@@ -51,6 +51,8 @@ const exportedMethods = {
 				// Get the guild document from the database
 				const guild = await Guild.findById({ _id: guildId });
 
+				console.log('Guild DB called for: Streamers - Add');
+
 				// Check if the streamer is already in database
 				// Return error if object is returned, otherwise null
 				if (guild.streamers.find(streamer => streamer.streamerName === streamerInfo.display_name)) {
@@ -78,7 +80,7 @@ const exportedMethods = {
 				guild.streamers.push(streamer);
 				await guild.save();
 
-				console.log('Streamer added to Database');
+				console.log('Guild DB saved for: Streamers - Add');
 
 				await interaction.editReply({
 					content: 'Streamer Added Successfully',
@@ -92,9 +94,57 @@ const exportedMethods = {
 				});
 			}
 		} else if (interaction.options.getSubcommand() === 'remove') {
+			// Get the id from the options
 			const id = interaction.options.getInteger('id');
+			// Get the guild id
+			const guildId = interaction.guild.id;
+			// Get the guild document from the database
+			const guild = await Guild.findById({ _id: guildId });
 
-			// TODO
+			console.log('Guild DB called for: Streamers - Remove');
+
+			// Check if ID is greater than IDs in DB, return error
+			if (id > guild.streamers.length) {
+				await interaction.editReply({
+					content: 'Error: ID could not be found. Please make sure it exists within the list of streamers',
+					ephemeral: true,
+				});
+				return;
+			}
+
+			// replace this with https://stackoverflow.com/questions/8668174/indexof-method-in-an-object-array
+			// https://stackoverflow.com/questions/5767325/how-can-i-remove-a-specific-item-from-an-array-in-javascript
+			// const test = guild.streamers.pull({ id: id });
+
+			// Create an array of only the IDs, then find the index of the specified ID
+			const test = guild.streamers.map(streamer => streamer.id).indexOf(id);
+			// Splice (modifies the original array instead of creating a copy of it like slice) the array removing the object at the index of
+			// .splice(index of object to remove, # of items afterwards to remove (1 means only that object))
+			// Returns an array of the deleted items, or an empty array if nothing was deleted
+			const removedStreamerArr = guild.streamers.splice(test, 1);
+
+			// Check that the removed streamer arr is empty (no streamer removed)
+			if (!removedStreamerArr.length) {
+				await interaction.editReply({
+					content: 'Error: Could not remove streamer. Please make sure ID exists within the list of streamers',
+					ephemeral: true,
+				});
+			}
+			// Get the removed streamer obj
+			const removedStreamer = removedStreamerArr[0];
+
+			// TODO:
+			// Update other IDs in streamer arr subdocs
+
+			// Save the changes to the streamers array
+			await guild.save();
+
+			console.log('Guild DB saved for: Streamers - Remove');
+
+			await interaction.editReply({
+				content: `${removedStreamer.streamerName} has been removed from the database`,
+			});
+
 
 		} else if (interaction.options.getSubcommand() === 'list') {
 			// Get the guild id
@@ -104,7 +154,7 @@ const exportedMethods = {
 			// Get the streamers array
 			const streamersArr = guild.streamers;
 
-			console.log('Guild DB called for: Streamers');
+			console.log('Guild DB called for: Streamers - List');
 
 			// Check the the streamers array is empty (no streamers in DB)
 			if (!streamersArr.length) {
