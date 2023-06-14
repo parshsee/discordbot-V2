@@ -51,7 +51,7 @@ const exportedMethods = {
 				// Get the guild document from the database
 				const guild = await Guild.findById({ _id: guildId });
 
-				console.log('Guild DB called for: Streamers - Add');
+				console.log(`Guild DB called for ${interaction.guild.name}: Streamers - Add`);
 
 				// Check if the streamer is already in database
 				// Return error if object is returned, otherwise null
@@ -80,7 +80,7 @@ const exportedMethods = {
 				guild.streamers.push(streamer);
 				await guild.save();
 
-				console.log('Guild DB saved for: Streamers - Add');
+				console.log(`Guild DB saved for ${interaction.guild.name}: Streamers - Add`);
 
 				await interaction.editReply({
 					content: 'Streamer Added Successfully',
@@ -96,55 +96,40 @@ const exportedMethods = {
 		} else if (interaction.options.getSubcommand() === 'remove') {
 			// Get the id from the options
 			const id = interaction.options.getInteger('id');
-			// Get the guild id
-			const guildId = interaction.guild.id;
-			// Get the guild document from the database
-			const guild = await Guild.findById({ _id: guildId });
+			// Call the .findOneAndUpdate() function from Mongoose Models to remove the streamer object from database (if it exists)
+			// Takes 3 params, the search query, the actual operation, optional parameters
+			// Search Query: Find where the streamer subdoc id equals the id given
+			// Operation: Pull (remove) the streamer subdoc from that array where the streamer id matches the id given
+			// Optional Params:
+			//	- Projection: return the specific values listed (0 for no 1 for yes), where the elements that match ($elemMatch) the id are in the streamer array
+			//	- returnDocument: Return the document (normally the entire Guild doc if projection is not specified) before the operation is done
+			// || [] - Short-Circuit Operation to ensure that if can't destructure 'streamers' array from DB operation then try from an empty array (will result in undefined instead of an error)
+			const { streamers } = await Guild.findOneAndUpdate(
+				{ 'streamers.id': id },
+				{ $pull: { streamers: { id: id } } },
+				{
+					projection: { _id: 0, streamers: { $elemMatch: { id: id } } },
+					returnDocument: 'before',
+				}) || [];
 
-			console.log('Guild DB called for: Streamers - Remove');
+			console.log(`Guild DB called for ${interaction.guild.name}: Streamers - Remove`);
 
-			// Check if ID is greater than IDs in DB, return error
-			if (id > guild.streamers.length) {
-				await interaction.editReply({
-					content: 'Error: ID could not be found. Please make sure it exists within the list of streamers',
-					ephemeral: true,
-				});
-				return;
-			}
-
-			// replace this with https://stackoverflow.com/questions/8668174/indexof-method-in-an-object-array
-			// https://stackoverflow.com/questions/5767325/how-can-i-remove-a-specific-item-from-an-array-in-javascript
-			// const test = guild.streamers.pull({ id: id });
-
-			// Create an array of only the IDs, then find the index of the specified ID
-			const test = guild.streamers.map(streamer => streamer.id).indexOf(id);
-			// Splice (modifies the original array instead of creating a copy of it like slice) the array removing the object at the index of
-			// .splice(index of object to remove, # of items afterwards to remove (1 means only that object))
-			// Returns an array of the deleted items, or an empty array if nothing was deleted
-			const removedStreamerArr = guild.streamers.splice(test, 1);
-
-			// Check that the removed streamer arr is empty (no streamer removed)
-			if (!removedStreamerArr.length) {
+			// Check if the streamers arr is undefined (no changes made in DB)
+			if (!streamers) {
 				await interaction.editReply({
 					content: 'Error: Could not remove streamer. Please make sure ID exists within the list of streamers',
 					ephemeral: true,
 				});
+				return;
 			}
-			// Get the removed streamer obj
-			const removedStreamer = removedStreamerArr[0];
-
 			// TODO:
 			// Update other IDs in streamer arr subdocs
 
-			// Save the changes to the streamers array
-			await guild.save();
-
-			console.log('Guild DB saved for: Streamers - Remove');
+			console.log(`Guild DB saved for ${interaction.guild.name}: Streamers - Remove`);
 
 			await interaction.editReply({
-				content: `${removedStreamer.streamerName} has been removed from the database`,
+				content: `${streamers[0].streamerName} has been removed from the database`,
 			});
-
 
 		} else if (interaction.options.getSubcommand() === 'list') {
 			// Get the guild id
@@ -154,13 +139,14 @@ const exportedMethods = {
 			// Get the streamers array
 			const streamersArr = guild.streamers;
 
-			console.log('Guild DB called for: Streamers - List');
+			console.log(`Guild DB called for ${interaction.guild.name}: Streamers - List`);
 
 			// Check the the streamers array is empty (no streamers in DB)
 			if (!streamersArr.length) {
 				await interaction.editReply({
 					content: 'No streamers exist in database!',
 				});
+				return;
 			}
 
 			// Sort the streamer array by ID (ascending)
