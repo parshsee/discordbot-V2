@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
 import * as dotenv from 'dotenv';
+import Guild from '../data/models/guilds.js';
 dotenv.config();
 
 
@@ -196,7 +197,35 @@ const twitchUserAPI = async (username) => {
 	}
 };
 
-// =============================== Buttons ===============================
+// =============================== Data Functions ===============================
+const updateCollectionIDs = async (id, guildId, subdocName) => {
+	try {
+		// Get the guild document
+		const guild = await Guild.findById({ _id: guildId });
+		// Get the specific subdocument
+		let subDocArr = guild[subdocName];
+
+		// Map through the subDoc,
+		// finding where the subDoc id is greater than the ID of the doc that was deleted
+		// Update those IDs
+		// Return the subDoc
+		// eslint-disable-next-line no-unused-vars
+		subDocArr = subDocArr.map(subDoc => {
+			if (subDoc.id > id) {
+				subDoc.id = subDoc.id - 1;
+			}
+			return subDoc;
+		});
+
+		// Save the Guild document with changes to subdocument
+		await guild.save();
+
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+// =============================== Discord Functions ===============================
 
 // Create confirm button
 const confirm = new ButtonBuilder()
@@ -273,6 +302,7 @@ export {
 	gameAPI,
 	twitchTokenValidator,
 	twitchUserAPI,
+	updateCollectionIDs,
 	confirm,
 	cancel,
 	createIntitialEmbed,

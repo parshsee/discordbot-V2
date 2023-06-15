@@ -124,6 +124,7 @@ const exportedMethods = {
 			}
 			// TODO:
 			// Update other IDs in streamer arr subdocs
+			await helper.updateCollectionIDs(id, interaction.guild.id, 'streamers');
 
 			console.log(`Guild DB saved for ${interaction.guild.name}: Streamers - Remove`);
 
