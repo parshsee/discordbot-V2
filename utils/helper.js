@@ -197,6 +197,35 @@ const twitchUserAPI = async (username) => {
 	}
 };
 
+const twitchStreamAPI = async (users) => {
+	try {
+		const params = new URLSearchParams();
+		for (const user of users) params.append('user_login', user);
+
+		// Axios call to get streamer info
+		// Destructure data to streamerInfo const
+		// Returns object within an object (data.data), contains the streamers information
+		const { data: streamerInfo } = await axios({
+			url: process.env.TWITCH_STREAM_API,
+			method: 'GET',
+			headers: {
+				Accept: 'application/json',
+				Authorization: `Bearer ${process.env.TWITCH_TOKEN}`,
+				'CLIENT-ID': process.env.TWITCH_CLIENT_ID,
+			},
+			params: params,
+		});
+
+		console.log('Call to Twitch Stream API: Successful');
+
+		console.log(streamerInfo);
+
+	} catch (error) {
+		console.log('Call to Twitch User API Failed:', error);
+		throw { code: 601, msg: 'Could not connect or API threw error' };
+	}
+};
+
 // =============================== Data Functions ===============================
 const updateCollectionIDs = async (id, guildId, subdocName) => {
 	try {
