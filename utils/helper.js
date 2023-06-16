@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
+import { ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
 import * as dotenv from 'dotenv';
 import Guild from '../data/models/guilds.js';
 dotenv.config();
@@ -220,6 +220,8 @@ const twitchStreamAPI = async (users) => {
 
 		console.log(streamerInfo);
 
+		return streamerInfo.data;
+
 	} catch (error) {
 		console.log('Call to Twitch User API Failed:', error);
 		throw { code: 601, msg: 'Could not connect or API threw error' };
@@ -278,6 +280,44 @@ const createIntitialEmbed = interaction => {
 	return embed;
 };
 
+// Get the member-log channel
+// Returns the Channel or undefined
+const getGuildMemberLogChannel = guild => {
+	return guild.channels.cache.find(channel => channel.name === 'member-log');
+};
+
+// Get the freestuff channel
+// Returns the Channel or undefined
+const getGuildFreestuffChannel = guild => {
+	return guild.channels.cache.find(channel => channel.name === 'freestuff');
+};
+
+// Get the reminders channel
+// Returns the Channel or undefined
+const getGuildRemindersChannel = guild => {
+	return guild.channels.cache.find(channel => channel.name === 'reminders');
+};
+
+// Get the live-promotions channel
+// Returns the Channel or undefined
+const getGuildLivePromotionsChannel = guild => {
+	return guild.channels.cache.find(channel => channel.name === 'live-promotions');
+};
+
+// Get the guilds System Channel
+// Returns the Channel or null (deleted/disabled/removed from guild)
+const getGuildSystemChannel = guild => {
+	return guild.systemChannel;
+};
+
+// Get a backup channel the bot has permission to send messages to
+// Returns the Channel or undefined
+const getGuildBackupChannel = guild => {
+	// Find another channel to send error message to
+	//		- Check that the channel is type 0 --- TextChannel type
+	//		- Check that the permissions for the bot (using bots id) for the channel includes SendMessages (check that the bot can send messages to this text channel)
+	return guild.channels.cache.find(channel => channel.type === 0 && channel.permissionsFor(guild.client.user.id).any(PermissionFlagsBits.SendMessages));
+};
 // =============================== Helper Functions ===============================
 
 const filterText = (text) => {
@@ -335,4 +375,10 @@ export {
 	confirm,
 	cancel,
 	createIntitialEmbed,
+	getGuildMemberLogChannel,
+	getGuildFreestuffChannel,
+	getGuildRemindersChannel,
+	getGuildLivePromotionsChannel,
+	getGuildSystemChannel,
+	getGuildBackupChannel,
 };
