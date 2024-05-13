@@ -218,13 +218,12 @@ const twitchStreamAPI = async (users) => {
 
 		console.log('Call to Twitch Stream API: Successful');
 
-		console.log(streamerInfo);
-
+		// Returns only the streamer information or an empty array if no streamers are online
 		return streamerInfo.data;
 
 	} catch (error) {
 		console.log('Call to Twitch User API Failed:', error);
-		throw { code: 601, msg: 'Could not connect or API threw error' };
+		return { code: 601, msg: 'Could not connect or API threw error' };
 	}
 };
 
@@ -258,6 +257,76 @@ const updateCollectionIDs = async (id, guildId, subdocName) => {
 
 // =============================== Discord Functions ===============================
 
+const streamChecker = async (client) => {
+	try {
+		// Get the guilds
+		const guilds = await Guild.find({});
+
+		// Loop through each guild
+		guilds.forEach(async guild => {
+			// Get only the streamer names from the guilds streamer subdoc
+			const streamers = guild.streamers.map(streamer => streamer.streamerName);
+			if (!streamers.length) {
+				console.log(`No Streamers in DB for Guild: ${guild._id}. Skipping Streamer Check...`);
+				return;
+			}
+
+			// Call the Twitch Streams API with array of streamers
+			// Returns array of streamers who are online or empty array if all streamers are offline
+			const response = await twitchStreamAPI(streamers);
+
+			// Check if the call was successful or errored out
+			if (response.code && response.code === 601) {
+				console.log(response.msg);
+				return;
+			}
+
+			guild.streamers.forEach(streamer => {
+				// Find if this streamer is in the array of online streamers from response
+				// Returns the streamer object from response or undefined (meaning streamer is offline)
+				// If response if empty array, then this will be undefined for every streamer and the if/else below will update the DB subdocument setting every streamer to offline, as intended
+				const onlineStreamer = response.find(resStreamer => resStreamer.user_name.toLowerCase() === streamer.streamerName.toLowerCase());
+
+				// If the streamer is online
+				if (onlineStreamer) {
+					// If the streamer game is differtent from the game title stored in DB (they are playing a different game)
+					// Lets us send a message the minute the streamer switches games, also prevents us from sending same message that streamer is live every check
+					if (streamer.gameTitle !== onlineStreamer.game_name) {
+						// Construct the embedded
+						const embed = createIntitialEmbed(client);
+						embed.setTitle(`${streamer.streamerName} is live on Twitch!`)
+							.setURL(`https://twitch.tv/${streamer.streamerName}`)
+							.setDescription(onlineStreamer.game_name);
+
+						// Need to get the Discord Guild object from the client (bot) guild cache (Collection of Guilds bot is in) that corresponds to the Guild Id stored in DB
+						const discordGuild = client.guilds.cache.find(dGuild => dGuild.id === guild.id);
+						// Use the Discord Guild to get the live-promotions channel for that guild
+						const livePromotionsChannel = getGuildLivePromotionsChannel(discordGuild);
+						// Send the embed to the channel
+						livePromotionsChannel.send({ embeds: [embed] });
+
+						// Update the streamer subdocument information
+						streamer.gameTitle = onlineStreamer.game_name;
+						streamer.status = 'Live';
+					}
+				} else {
+					// Update the streamer subdocument information
+					streamer.gameTitle = '';
+					streamer.status = 'Offline';
+				}
+			});
+
+			// Save the changes made to any streamer subdocument for that guild
+			await guild.save();
+		});
+
+		return;
+
+	} catch (error) {
+		console.log(error);
+	}
+};
+
 // Create confirm button
 const confirm = new ButtonBuilder()
 	.setCustomId('confirm')
@@ -271,11 +340,11 @@ const cancel = new ButtonBuilder()
 	.setStyle(ButtonStyle.Secondary);
 
 // Create the initial embed layout
-const createIntitialEmbed = interaction => {
+const createIntitialEmbed = client => {
 	const embed = new EmbedBuilder()
 		.setColor('#0099ff')
 		.setTimestamp()
-		.setAuthor({ name: 'Immature Bot', iconURL: interaction.client.user.avatarURL(), url: 'https://github.com/parshsee/discordbot-V2' })
+		.setAuthor({ name: 'Immature Bot', iconURL: client.user.avatarURL(), url: 'https://github.com/parshsee/discordbot-V2' })
 		.setFooter({ text: 'Immature Bot' });
 	return embed;
 };
@@ -371,6 +440,7 @@ export {
 	gameAPI,
 	twitchTokenValidator,
 	twitchUserAPI,
+	streamChecker,
 	updateCollectionIDs,
 	confirm,
 	cancel,
