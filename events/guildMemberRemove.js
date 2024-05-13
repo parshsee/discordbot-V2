@@ -12,6 +12,14 @@ const exportedMethods = {
 			return;
 		}
 
+		// Check if bot was removed from guild
+		// Handles edge case where bot would throw an error when trying to send a message to sysChannel or backupChannel after it had been removed
+		// (It wouldn't have permissions to send to a channel in a guild its no longer a part of)
+		if (guildMember.id === guild.client.user.id) {
+			console.log(`Bot was removed from Guild: ${guild.name}`);
+			return;
+		}
+
 		// Check that member log channel exists within guild
 		// Will return the channel info or undefined
 		const memberLogChannel = guild.channels.cache.find(channel => channel.name === 'member-log');
