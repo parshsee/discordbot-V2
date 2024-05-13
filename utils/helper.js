@@ -94,7 +94,7 @@ const gameAPI = async (gameName, gameYear) => {
 		});
 
 		// Filter out the search results for the one(s) where the name exactly matches the search term
-		gameInfo = gameInfo.filter(game => game.name.toLowerCase() === gameName);
+		gameInfo = gameInfo.filter(game => game.name.toLowerCase() === gameName.toLowerCase());
 
 		// If the search has no results (empty array)
 		// Return error and errorMessage
