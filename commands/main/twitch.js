@@ -154,7 +154,7 @@ const exportedMethods = {
 			streamersArr.sort((a, b) => a._id - b._id);
 
 			// Call helper function to create intiial embed
-			let embed = helper.createIntitialEmbed(interaction);
+			let embed = helper.createIntitialEmbed(interaction.client);
 			// The limit of how many stremers can be in an embed
 			// Only have 25 fields
 			// Need to set the ID, Streamer, and Twitch Url each column is a different field (so 3)
@@ -174,7 +174,7 @@ const exportedMethods = {
 					embedArr.push(embed);
 					// Clear all fields from the embed
 					// Allows me to add another 25 fields
-					embed = helper.createIntitialEmbed(interaction);
+					embed = helper.createIntitialEmbed(interaction.client);
 				}
 
 				// If the remainder is 0, indicates that this will be the first row in embed, set titles
