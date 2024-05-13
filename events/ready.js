@@ -28,6 +28,10 @@ const exportedMethods = {
 		// Use node-scheduler to create a cron-job that runs every minute
 		// Calls the twitch token validator, to check that the token is not expired (if it is, it will retrieve a new token as well)
 		scheduleJob('*/1 * * * *', async () => helper.twitchTokenValidator());
+		console.log('Twitch Token Checker	:	Created');
+		// Calls the streamer db, to check if any streamer is active (if it is, it will send a message to the corresponding guild 'live-promotions' channel)
+		scheduleJob('*/1 * * * *', async () => helper.streamChecker(client));
+		console.log('Streamer Checker	:	Created');
 
 		console.log(`Ready! Logged in as ${client.user.tag}`);
 	},
