@@ -69,6 +69,7 @@ const exportedMethods = {
 
 			// If the confirmation is collected (passed the filter) within the given time, check which button was clicked
 			if (confirmation.customId === 'confirm') {
+				console.log(`Creating ${reqChannels.length} channel(s) for ${guild.name}: ${reqChannels.join(' - ')}`);
 				// Loop through the array of channels
 				for (const channel of reqChannels) {
 					// Check for each required channel
