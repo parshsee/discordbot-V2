@@ -131,29 +131,148 @@ const exportedMethods = {
 
 				return;
 			} catch (error) {
-				console.log(error)
+				console.log(error);
 			}
 		} else if (interaction.options.getSubcommand() === 'list') {
-			// Get the choice from options
+			// Get the choice, id, and user from options
 			const choice = interaction.options.getString('choices');
-			// Get the guildId
-			const guildId = interacton.guild.id;
+			const id = interaction.options.getInteger('id');
+			const user = interaction.options.getUser('user');
 
-			switch choice {
-				case 'list_all':
-
-					break;
-				case 'list_name':
-					break;
-				case 'list_id':
-					break;
-				case 'list_random':
-					break;
+			// Check if Show ID is selected but no id provided
+			if (choice === 'list_id' && !id) {
+				await interaction.editReply({
+					content: 'Error: ID must be provided to use \'Search by ID\'',
+				});
+				return;
 			}
+
+			// Check if Show Name is selected but no user provided
+			if (choice === 'list_name' && !user) {
+				await interaction.editReply({
+					content: 'Error: User must be provided to use \'Search by Name\'',
+				});
+				return;
+			}
+
+			try {
+				// Get the guildId
+				const guildId = interaction.guild.id;
+
+				switch (choice) {
+					case 'list_all': {
+						// Destructure the quotes array from the guild document that is returned from the DB
+						const { quotes } = await Guilds.findById(
+							{ _id: guildId },
+							{ _id: 0, quotes: 1 },
+						);
+
+						console.log(`Guild DB called for ${interaction.guild.name}: Quotes - List - All`);
+
+						// Check if the quotes array is empty (no quotes in DB)
+						if (!quotes.length) {
+							await interaction.editReply({
+								content: 'No quotes exist in database!',
+							});
+							return;
+						}
+
+						// Sort the quote array by ID (ascending) (maybe not needed since DB is already sorted?)
+						quotes.sort((a, b) => a.id - b.id);
+
+						// Craete all the embeds necessary to show all quotes
+						const embedArr = createEmbed(interaction, quotes);
+
+						// Create the chunksize, this is the amount of embeds that can be sent in one interaction (10)
+						const chunkSize = 10;
+						// Loop through the array of embeds, sending messages for every 10 embeds
+						for (let index = 0; index < embedArr.length; index += chunkSize) {
+							// Slice (create shallow copy of portion of array) the embed array to get 10 embeds
+							// Will be from (0, 9), (10, 19), etc depending on amount of embeds created
+							const chunk = embedArr.slice(index, index + chunkSize);
+
+							// Send a followUp interaction with the embed chunk
+							await interaction.followUp({
+								embeds: chunk,
+							});
+
+						}
+						break;
+					}
+					case 'list_name': {
+						break;
+					}
+					case 'list_id': {
+						break;
+					}
+					case 'list_random': {
+						break;
+					}
+				}
+			} catch (error) {
+				console.log(error);
+			}
+
 		}
 
 		await interaction.editReply({ content: 'Boop' });
 	},
+};
+
+// =============================== Quotes Specific Helper Function ===============================
+
+const createEmbed = (interaction, quotesArr) => {
+	// Call the helper function to create the initial embed
+	let embed = helper.createIntitialEmbed(interaction.client);
+	// The limit of how many quotes can be in an embed
+	// Only have 25 fields
+	// Need to set the ID, Quote, and User Name each column is a different field (so 3)
+	// 8 * 3 = 24, Only 8 quotes can be in an embed at a time
+	let limit = 8;
+	// Create an array to hold all the embeds
+	const embedArr = [];
+	// Loop through the array getting the quote object and index
+	quotesArr.forEach((quote, index) => {
+		// If the index = the limit
+		if (index === limit) {
+			// Set initial title for first embed and the titles for the others
+			embed.setTitle(index === 8 ? 'All Quotes' : 'All Quotes Cont.');
+			// Increase the limit
+			limit += 8;
+			// Add the embed to the array of embeds
+			embedArr.push(embed);
+			// Clear all fields from the embed
+			// Allows me to add another 25 fields
+			embed = helper.createIntitialEmbed(interaction.client);
+		}
+
+		// Get the guild user from guild members cache where the member id matches the userId in DB
+		const guildUser = interaction.guild.members.cache.find(member => member.id === quote.userId);
+
+		// If the guildUser returns undefined/null, set name to default
+		// Edge case if user who has quotes in DB leaves the server/guild
+		if (!guildUser) {
+			guildUser.user.globalName = 'Unknown User';
+		}
+
+		// If the remainder is 0, indicates that this will be the first row in embed, set titles
+		if (index % 8 === 0) {
+			embed.addFields({ name: 'ID', value: `${quote.id}`, inline: true });
+			embed.addFields({ name: 'Quote', value: `${quote.quote}`, inline: true });
+			embed.addFields({ name: 'User', value: `${guildUser.user.globalName}`, inline: true });
+			// Else its not the first row, titles can be blank
+		} else {
+			embed.addFields({ name: '\u200b', value: `${quote.id}`, inline: true });
+			embed.addFields({ name: '\u200b', value: `${quote.quote}`, inline: true });
+			embed.addFields({ name: '\u200b', value: `${guildUser.user.globalName}`, inline: true });
+		}
+	});
+	// Add the remaining embed after it exits for loop
+	// Ensures that the last streamers are added
+	// I.e if 28 streamers in db, 24 will get added with code above, last 4 will get added with this
+	embedArr.push(embed);
+
+	return embedArr;
 };
 
 export default exportedMethods;
