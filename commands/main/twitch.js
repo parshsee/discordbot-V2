@@ -96,6 +96,9 @@ const exportedMethods = {
 		} else if (interaction.options.getSubcommand() === 'remove') {
 			// Get the id from the options
 			const id = interaction.options.getInteger('id');
+			// Get the guild id
+			const guildId = interaction.guild.id;
+
 			// Call the .findOneAndUpdate() function from Mongoose Models to remove the streamer object from database (if it exists)
 			// Takes 3 params, the search query, the actual operation, optional parameters
 			// Search Query: Find where the streamer subdoc id equals the id given
@@ -105,7 +108,12 @@ const exportedMethods = {
 			//	- returnDocument: Return the document (normally the entire Guild doc if projection is not specified) before the operation is done
 			// || [] - Short-Circuit Operation to ensure that if can't destructure 'streamers' array from DB operation then try from an empty array (will result in undefined instead of an error)
 			const { streamers } = await Guild.findOneAndUpdate(
-				{ 'streamers.id': id },
+				{
+					$and: [
+						{ _id: guildId },
+						{ 'streamers.id': id },
+					],
+				},
 				{ $pull: { streamers: { id: id } } },
 				{
 					projection: { _id: 0, streamers: { $elemMatch: { id: id } } },
