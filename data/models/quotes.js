@@ -8,9 +8,11 @@ import mongoose from 'mongoose';
 // Default supplied a default value if none is provided
 // autoIndex and autoCreate false stop Mongoose from automatically creating a Collection in MongoDB
 // 	for the quotes schema
+// *** userId is String as ID (type of Twitter Snowflake not Number) is too big and gets rounded when storing ***
+// https://developer.twitter.com/en/docs/twitter-ids
 const quotesSchema = mongoose.Schema({
 	id: { type: Number, required: true, unique: true },
-	userId: { type: Number, required: true, trim: true },
+	userId: { type: String, required: true, trim: true },
 	quote: { type: String, required: true, trim: true },
 	timestamp: { type: Date, required: true, default: Date.now },
 }, { autoIndex: false, autoCreate: false });
