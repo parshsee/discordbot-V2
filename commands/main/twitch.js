@@ -101,7 +101,7 @@ const exportedMethods = {
 
 			// Call the .findOneAndUpdate() function from Mongoose Models to remove the streamer object from database (if it exists)
 			// Takes 3 params, the search query, the actual operation, optional parameters
-			// Search Query: Find where the streamer subdoc id equals the id given
+			// Search Query: Find where the guild id matches the _id AND the streamer subdoc id equals the id given
 			// Operation: Pull (remove) the streamer subdoc from that array where the streamer id matches the id given
 			// Optional Params:
 			//	- Projection: return the specific values listed (0 for no 1 for yes), where the elements that match ($elemMatch) the id are in the streamer array
@@ -130,9 +130,9 @@ const exportedMethods = {
 				});
 				return;
 			}
-			// TODO:
+
 			// Update other IDs in streamer arr subdocs
-			await helper.updateCollectionIDs(id, interaction.guild.id, 'streamers');
+			await helper.updateCollectionIDs(id, guildId, 'streamers');
 
 			console.log(`Guild DB saved for ${interaction.guild.name}: Streamers - Remove`);
 
