@@ -159,7 +159,7 @@ const exportedMethods = {
 			}
 
 			// Sort the streamer array by ID (ascending)
-			streamersArr.sort((a, b) => a._id - b._id);
+			streamersArr.sort((a, b) => a.id - b.id);
 
 			// Call helper function to create intiial embed
 			let embed = helper.createIntitialEmbed(interaction.client);
