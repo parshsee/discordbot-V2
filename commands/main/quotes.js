@@ -88,50 +88,68 @@ const exportedMethods = {
 			// Get the guild id
 			const guildId = interaction.guild.id;
 
-			// Call the .findOneAndUpdate() function from Mongoose Models to remove the quote object from database (if it exists)
-			// Takes 3 params, the search query, the actual operation, optional parameters
-			// Search Query: Find where the guild id matches the _id AND quote subdoc id equals the id given
-			// Operation: Pull (remove) the quote subdoc from that array where the quote id matches the id given
-			// Optional Params:
-			//	- Projection: return the specific values listed (0 for no 1 for yes), where the elements that match ($elemMatch) the id are in the quote array
-			//	- returnDocument: Return the document (normally the entire Guild doc if projection is not specified) before the operation is done
-			// || [] - Short-Circuit Operation to ensure that if can't destructure 'quotes' array from DB operation then try from an empty array (will result in undefined instead of an error)
-			const { quotes } = await Guilds.findOneAndUpdate(
-				{
-					$and: [
-						{ _id: guildId },
-						{ 'quotes.id': id },
-					],
-				},
-				{ $pull: { quotes: { id: id } } },
-				{
-					projection: { _id: 0, quotes: { $elemMatch: { id: id } } },
-					returnDocument: 'before',
-				}) || [];
+			try {
+				// Call the .findOneAndUpdate() function from Mongoose Models to remove the quote object from database (if it exists)
+				// Takes 3 params, the search query, the actual operation, optional parameters
+				// Search Query: Find where the guild id matches the _id AND quote subdoc id equals the id given
+				// Operation: Pull (remove) the quote subdoc from that array where the quote id matches the id given
+				// Optional Params:
+				//	- Projection: return the specific values listed (0 for no 1 for yes), where the elements that match ($elemMatch) the id are in the quote array
+				//	- returnDocument: Return the document (normally the entire Guild doc if projection is not specified) before the operation is done
+				// || [] - Short-Circuit Operation to ensure that if can't destructure 'quotes' array from DB operation then try from an empty array (will result in undefined instead of an error)
+				const { quotes } = await Guilds.findOneAndUpdate(
+					{
+						$and: [
+							{ _id: guildId },
+							{ 'quotes.id': id },
+						],
+					},
+					{ $pull: { quotes: { id: id } } },
+					{
+						projection: { _id: 0, quotes: { $elemMatch: { id: id } } },
+						returnDocument: 'before',
+					}) || [];
 
-			console.log(`Guild DB called for ${interaction.guild.name}: Quotes - Remove`);
+				console.log(`Guild DB called for ${interaction.guild.name}: Quotes - Remove`);
 
-			// Check if the quotes arr is undefined (no changes made in DB)
-			if (!quotes) {
+				// Check if the quotes arr is undefined (no changes made in DB)
+				if (!quotes) {
+					await interaction.editReply({
+						content: 'Error: Could not remove quote. Please make sure ID exists within the list of quotes',
+						ephemeral: true,
+					});
+					return;
+				}
+
+				// Update other Ids in quote arr subdocs
+				await helper.updateCollectionIDs(id, guildId, 'quotes');
+
+				// Send message saying the remove operation was a success
 				await interaction.editReply({
-					content: 'Error: Could not remove quote. Please make sure ID exists within the list of quotes',
-					ephemeral: true,
+					content: 'Quote has been removed from the database',
 				});
+
 				return;
+			} catch (error) {
+				console.log(error)
 			}
-
-			// Update other Ids in quote arr subdocs
-			await helper.updateCollectionIDs(id, guildId, 'quotes');
-
-			// Send message saying the remove operation was a success
-			await interaction.editReply({
-				content: 'Quote has been removed from the database',
-			});
-
-			return;
-
 		} else if (interaction.options.getSubcommand() === 'list') {
+			// Get the choice from options
+			const choice = interaction.options.getString('choices');
+			// Get the guildId
+			const guildId = interacton.guild.id;
 
+			switch choice {
+				case 'list_all':
+
+					break;
+				case 'list_name':
+					break;
+				case 'list_id':
+					break;
+				case 'list_random':
+					break;
+			}
 		}
 
 		await interaction.editReply({ content: 'Boop' });
