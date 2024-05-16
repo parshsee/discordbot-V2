@@ -287,9 +287,6 @@ const exportedMethods = {
 							return;
 						}
 
-						// Sort the quote array by ID (ascending) (maybe not needed since DB is already sorted?)
-						idQuote.sort((a, b) => a.id - b.id);
-
 						// Craete all the embeds necessary to show all quotes
 						const embedArr = createEmbed(interaction, idQuote);
 
@@ -310,6 +307,50 @@ const exportedMethods = {
 						break;
 					}
 					case 'list_random': {
+						// Destructure the quotes array from the guild document that is returned from the DB
+						// First argument: Finds where _id matches guildId AND quotes userId matches given users id
+						// Second argument: projection (what to return) - Don't return _id (else returns by default) and return the quotes array (will still be inside guild doc hence the destructure)
+						// *** Got errors trying to use $and operation to also filter by userId (string)***
+						const { quotes } = await Guilds.findById(
+							{ _id: guildId },
+							{ _id: 0, quotes: 1 },
+						);
+
+
+						console.log(`Guild DB called for ${interaction.guild.name}: Quotes - List - Random`);
+
+						// Check if the quotes array is empty (no quotes in DB)
+						if (!quotes.length) {
+							await interaction.editReply({
+								content: 'No quotes exist in database!',
+							});
+							return;
+						}
+
+						// Get a random quote object from the quotes array
+						const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+						// Create an empty array, add the object to the array
+						// This allows us to reuse the createEmbed function and sending code
+						const randomQuoteArr = [];
+						randomQuoteArr.push(randomQuote);
+
+						// Craete all the embeds necessary to show all quotes
+						const embedArr = createEmbed(interaction, randomQuoteArr);
+
+						// Create the chunksize, this is the amount of embeds that can be sent in one interaction (10)
+						const chunkSize = 10;
+						// Loop through the array of embeds, sending messages for every 10 embeds
+						for (let index = 0; index < embedArr.length; index += chunkSize) {
+							// Slice (create shallow copy of portion of array) the embed array to get 10 embeds
+							// Will be from (0, 9), (10, 19), etc depending on amount of embeds created
+							const chunk = embedArr.slice(index, index + chunkSize);
+
+							// Send a followUp interaction with the embed chunk
+							await interaction.followUp({
+								embeds: chunk,
+							});
+						}
+
 						break;
 					}
 				}
