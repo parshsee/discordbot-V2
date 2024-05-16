@@ -159,70 +159,41 @@ const exportedMethods = {
 				// Get the guildId
 				const guildId = interaction.guild.id;
 
+				// Destructure the quotes array from the guild document that is returned from the DB
+				// First argument: Finds where _id matches guildId AND quotes userId matches given users id
+				// Second argument: projection (what to return) - Don't return _id (else returns by default) and return the quotes array (will still be inside guild doc hence the destructure)
+				// *** Got errors trying to use $and operation to also filter by userId (string)***
+				const { quotes } = await Guilds.findById(
+					{ _id: guildId },
+					{ _id: 0, quotes: 1 },
+				);
+
+
+				console.log(`Guild DB called for ${interaction.guild.name}: Quotes - List`);
+
+				// Check if the quotes array is empty (no quotes in DB)
+				if (!quotes.length) {
+					await interaction.editReply({
+						content: 'No quotes exist in database!',
+					});
+					return;
+				}
+
 				switch (choice) {
 					case 'list_all': {
-						// Destructure the quotes array from the guild document that is returned from the DB
-						// First argument: Finds where _id matches guildId
-						// Second argument: projection (what to return) - Don't return _id (else returns by default) and return the quotes array (will still be inside guild doc hence the destructure)
-						const { quotes } = await Guilds.findById(
-							{ _id: guildId },
-							{ _id: 0, quotes: 1 },
-						);
-
-						console.log(`Guild DB called for ${interaction.guild.name}: Quotes - List - All`);
-
-						// Check if the quotes array is empty (no quotes in DB)
-						if (!quotes.length) {
-							await interaction.editReply({
-								content: 'No quotes exist in database!',
-							});
-							return;
-						}
-
+						console.log('Quotes - List All Called');
 						// Sort the quote array by ID (ascending) (maybe not needed since DB is already sorted?)
 						quotes.sort((a, b) => a.id - b.id);
 
 						// Craete all the embeds necessary to show all quotes
-						const embedArr = createEmbed(interaction, quotes);
+						await createAndSendEmbed(interaction, quotes);
 
-						// Create the chunksize, this is the amount of embeds that can be sent in one interaction (10)
-						const chunkSize = 10;
-						// Loop through the array of embeds, sending messages for every 10 embeds
-						for (let index = 0; index < embedArr.length; index += chunkSize) {
-							// Slice (create shallow copy of portion of array) the embed array to get 10 embeds
-							// Will be from (0, 9), (10, 19), etc depending on amount of embeds created
-							const chunk = embedArr.slice(index, index + chunkSize);
-
-							// Send a followUp interaction with the embed chunk
-							await interaction.followUp({
-								embeds: chunk,
-							});
-
-						}
 						break;
 					}
 					case 'list_name': {
+						console.log('Quotes - List All By Name Called');
 						// Get the id from given user
 						const userId = user.id;
-						// Destructure the quotes array from the guild document that is returned from the DB
-						// First argument: Finds where _id matches guildId AND quotes userId matches given users id
-						// Second argument: projection (what to return) - Don't return _id (else returns by default) and return the quotes array (will still be inside guild doc hence the destructure)
-						// *** Got errors trying to use $and operation to also filter by userId (string)***
-						const { quotes } = await Guilds.findById(
-							{ _id: guildId },
-							{ _id: 0, quotes: 1 },
-						);
-
-						console.log(`Guild DB called for ${interaction.guild.name}: Quotes - List - Name`);
-
-						// Check if the quotes array is empty (no quotes in DB)
-						if (!quotes.length) {
-							await interaction.editReply({
-								content: 'No quotes exist in database!',
-							});
-							return;
-						}
-
 						// Filter the quotes array for only quotes from user
 						const userQuotes = quotes.filter(quote => quote.userId === userId);
 
@@ -238,44 +209,12 @@ const exportedMethods = {
 						userQuotes.sort((a, b) => a.id - b.id);
 
 						// Craete all the embeds necessary to show all quotes
-						const embedArr = createEmbed(interaction, userQuotes);
-
-						// Create the chunksize, this is the amount of embeds that can be sent in one interaction (10)
-						const chunkSize = 10;
-						// Loop through the array of embeds, sending messages for every 10 embeds
-						for (let index = 0; index < embedArr.length; index += chunkSize) {
-							// Slice (create shallow copy of portion of array) the embed array to get 10 embeds
-							// Will be from (0, 9), (10, 19), etc depending on amount of embeds created
-							const chunk = embedArr.slice(index, index + chunkSize);
-
-							// Send a followUp interaction with the embed chunk
-							await interaction.followUp({
-								embeds: chunk,
-							});
-						}
+						await createAndSendEmbed(interaction, userQuotes);
 
 						break;
 					}
 					case 'list_id': {
-						// Destructure the quotes array from the guild document that is returned from the DB
-						// First argument: Finds where _id matches guildId AND quotes userId matches given users id
-						// Second argument: projection (what to return) - Don't return _id (else returns by default) and return the quotes array (will still be inside guild doc hence the destructure)
-						// *** Got errors trying to use $and operation to also filter by userId (string)***
-						const { quotes } = await Guilds.findById(
-							{ _id: guildId },
-							{ _id: 0, quotes: 1 },
-						);
-
-						console.log(`Guild DB called for ${interaction.guild.name}: Quotes - List - ID`);
-
-						// Check if the quotes array is empty (no quotes in DB)
-						if (!quotes.length) {
-							await interaction.editReply({
-								content: 'No quotes exist in database!',
-							});
-							return;
-						}
-
+						console.log('Quotes - List One By ID Called');
 						// Filter the quotes array to only have quotes that match the ID (should be an array with only one object)
 						const idQuote = quotes.filter(quote => quote.id === id);
 
@@ -288,45 +227,12 @@ const exportedMethods = {
 						}
 
 						// Craete all the embeds necessary to show all quotes
-						const embedArr = createEmbed(interaction, idQuote);
-
-						// Create the chunksize, this is the amount of embeds that can be sent in one interaction (10)
-						const chunkSize = 10;
-						// Loop through the array of embeds, sending messages for every 10 embeds
-						for (let index = 0; index < embedArr.length; index += chunkSize) {
-							// Slice (create shallow copy of portion of array) the embed array to get 10 embeds
-							// Will be from (0, 9), (10, 19), etc depending on amount of embeds created
-							const chunk = embedArr.slice(index, index + chunkSize);
-
-							// Send a followUp interaction with the embed chunk
-							await interaction.followUp({
-								embeds: chunk,
-							});
-						}
+						await createAndSendEmbed(interaction, idQuote);
 
 						break;
 					}
 					case 'list_random': {
-						// Destructure the quotes array from the guild document that is returned from the DB
-						// First argument: Finds where _id matches guildId AND quotes userId matches given users id
-						// Second argument: projection (what to return) - Don't return _id (else returns by default) and return the quotes array (will still be inside guild doc hence the destructure)
-						// *** Got errors trying to use $and operation to also filter by userId (string)***
-						const { quotes } = await Guilds.findById(
-							{ _id: guildId },
-							{ _id: 0, quotes: 1 },
-						);
-
-
-						console.log(`Guild DB called for ${interaction.guild.name}: Quotes - List - Random`);
-
-						// Check if the quotes array is empty (no quotes in DB)
-						if (!quotes.length) {
-							await interaction.editReply({
-								content: 'No quotes exist in database!',
-							});
-							return;
-						}
-
+						console.log('Quotes - List One By Random Called');
 						// Get a random quote object from the quotes array
 						const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
 						// Create an empty array, add the object to the array
@@ -335,21 +241,7 @@ const exportedMethods = {
 						randomQuoteArr.push(randomQuote);
 
 						// Craete all the embeds necessary to show all quotes
-						const embedArr = createEmbed(interaction, randomQuoteArr);
-
-						// Create the chunksize, this is the amount of embeds that can be sent in one interaction (10)
-						const chunkSize = 10;
-						// Loop through the array of embeds, sending messages for every 10 embeds
-						for (let index = 0; index < embedArr.length; index += chunkSize) {
-							// Slice (create shallow copy of portion of array) the embed array to get 10 embeds
-							// Will be from (0, 9), (10, 19), etc depending on amount of embeds created
-							const chunk = embedArr.slice(index, index + chunkSize);
-
-							// Send a followUp interaction with the embed chunk
-							await interaction.followUp({
-								embeds: chunk,
-							});
-						}
+						await createAndSendEmbed(interaction, randomQuoteArr);
 
 						break;
 					}
@@ -366,7 +258,7 @@ const exportedMethods = {
 
 // =============================== Quotes Specific Helper Function ===============================
 
-const createEmbed = (interaction, quotesArr) => {
+const createAndSendEmbed = async (interaction, quotesArr) => {
 	// Call the helper function to create the initial embed
 	let embed = helper.createIntitialEmbed(interaction.client);
 	// The limit of how many quotes can be in an embed
@@ -417,7 +309,21 @@ const createEmbed = (interaction, quotesArr) => {
 	// I.e if 28 streamers in db, 24 will get added with code above, last 4 will get added with this
 	embedArr.push(embed);
 
-	return embedArr;
+	// Create the chunksize, this is the amount of embeds that can be sent in one interaction (10)
+	const chunkSize = 10;
+	// Loop through the array of embeds, sending messages for every 10 embeds
+	for (let index = 0; index < embedArr.length; index += chunkSize) {
+		// Slice (create shallow copy of portion of array) the embed array to get 10 embeds
+		// Will be from (0, 9), (10, 19), etc depending on amount of embeds created
+		const chunk = embedArr.slice(index, index + chunkSize);
+
+		// Send a followUp interaction with the embed chunk
+		await interaction.followUp({
+			embeds: chunk,
+		});
+	}
+
+	return;
 };
 
 export default exportedMethods;
