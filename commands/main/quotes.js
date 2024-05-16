@@ -162,6 +162,8 @@ const exportedMethods = {
 				switch (choice) {
 					case 'list_all': {
 						// Destructure the quotes array from the guild document that is returned from the DB
+						// First argument: Finds where _id matches guildId
+						// Second argument: projection (what to return) - Don't return _id (else returns by default) and return the quotes array (will still be inside guild doc hence the destructure)
 						const { quotes } = await Guilds.findById(
 							{ _id: guildId },
 							{ _id: 0, quotes: 1 },
@@ -200,6 +202,50 @@ const exportedMethods = {
 						break;
 					}
 					case 'list_name': {
+						// Get the id from given user
+						const userId = user.id;
+						// Destructure the quotes array from the guild document that is returned from the DB
+						// First argument: Finds where _id matches guildId AND quotes userId matches given users id
+						// Second argument: projection (what to return) - Don't return _id (else returns by default) and return the quotes array (will still be inside guild doc hence the destructure)
+						// *** Got errors trying to use $and operation to also filter by userId ***
+						const { quotes } = await Guilds.findById(
+							{ _id: guildId },
+							{ _id: 0, quotes: 1 },
+						);
+
+						console.log(`Guild DB called for ${interaction.guild.name}: Quotes - List - Name`);
+
+						// Check if the quotes array is empty (no quotes in DB)
+						if (!quotes.length) {
+							await interaction.editReply({
+								content: 'No quotes by that user exist in database!',
+							});
+							return;
+						}
+
+						// Filter the quotes array for only quotes from user
+						const userQuotes = quotes.filter(quote => quote.userId === userId);
+
+						// Sort the quote array by ID (ascending) (maybe not needed since DB is already sorted?)
+						userQuotes.sort((a, b) => a.id - b.id);
+
+						// Craete all the embeds necessary to show all quotes
+						const embedArr = createEmbed(interaction, userQuotes);
+
+						// Create the chunksize, this is the amount of embeds that can be sent in one interaction (10)
+						const chunkSize = 10;
+						// Loop through the array of embeds, sending messages for every 10 embeds
+						for (let index = 0; index < embedArr.length; index += chunkSize) {
+							// Slice (create shallow copy of portion of array) the embed array to get 10 embeds
+							// Will be from (0, 9), (10, 19), etc depending on amount of embeds created
+							const chunk = embedArr.slice(index, index + chunkSize);
+
+							// Send a followUp interaction with the embed chunk
+							await interaction.followUp({
+								embeds: chunk,
+							});
+						}
+
 						break;
 					}
 					case 'list_id': {
@@ -251,7 +297,7 @@ const createEmbed = (interaction, quotesArr) => {
 
 		// If the guildUser returns undefined/null, set name to default
 		// Edge case if user who has quotes in DB leaves the server/guild
-		if (!guildUser) {
+		if (!guildUser || !guildUser.user.globalName) {
 			guildUser.user.globalName = 'Unknown User';
 		}
 
