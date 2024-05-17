@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 // autoIndex and autoCreate false stop Mongoose from automatically creating a Collection in MongoDB
 // 	for the birthday schema
 const birthdaySchema = mongoose.Schema({
+	id: { type: Number, required: true, unique: true },
 	fName: { type: String, required: true, trim: true },
 	lName: { type: String, required: true, trim: true },
 	birthday: { type: Date, required: true },
