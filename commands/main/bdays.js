@@ -1,6 +1,6 @@
-import { SlashCommandBuilder } from "discord.js";
-import Guilds from "../../data/models/guilds";
-import Birthdays from "../../data/models/birthdays";
+import { SlashCommandBuilder } from 'discord.js';
+import Guilds from '../../data/models/guilds.js';
+import Birthdays from '../../data/models/birthdays.js';
 import * as helper from '../../utils/helper.js';
 
 const exportedMethods = {
@@ -27,7 +27,72 @@ const exportedMethods = {
 		await interaction.deferReply();
 
 		if (interaction.options.getSubcommand() === 'add') {
+			// Get the string with full name and birthday
+			const userInput = interaction.options.getString('user-birthday');
+			const userInputArr = userInput.split(' ');
 
+			// Check if the user gave the correct amount of arguments
+			if (userInputArr.length !== 3) {
+				await interaction.editReply({
+					content: 'Error: Command needs a First Name, Last Name, and Birthday. Ex: John Doe 1/1/1970',
+					ephemeral: true,
+				});
+				return;
+			}
+
+			try {
+				// Gets the first & last names (capitalizing the first letter in each)
+				// Gets the birthday
+				// Gets each part of the birthday in an array (month, day, year)
+				const userFirstName = userInputArr[0].charAt(0).toUpperCase() + userInputArr[0].slice(1);
+				const userLastName = userInputArr[1].charAt(0).toUpperCase() + userInputArr[1].slice(1);
+				const userBirthdate = userInputArr[2];
+				const birthdateArray = userBirthdate.split('/');
+
+				const birthdate = validateBirthdate(userBirthdate, birthdateArray);
+
+				// Get the guild id
+				const guildId = interaction.guild.id;
+				// Get the guild document from the database
+				const guild = await Guilds.findById({ _id: guildId });
+
+				console.log(`Guild DB called for ${interaction.guild.name}: Bdays - Add`);
+
+				// Create the ID number for the new subdocument
+				// based on amount of quotes (subdocs) already in array
+				const idNumber = guild.birthdays.length + 1;
+
+				const birthday = new Birthdays({
+					id: idNumber,
+					fName: userFirstName,
+					lName: userLastName,
+					birthday: birthdate,
+				});
+
+				// Add the quote subdocument to the array of quotes
+				// Save the guild document
+				guild.birthdays.push(birthday);
+				await guild.save();
+
+				console.log(`Guild DB saved for ${interaction.guild.name}: Bdays - Add`);
+
+				// Send response back saying success
+				await interaction.editReply({
+					content: 'Birthday Added Successfully',
+				});
+
+				return;
+
+			} catch (error) {
+				console.log(error);
+				if (error.code && error.code === 601) {
+					await interaction.editReply({
+						content: error.msg,
+					});
+				}
+
+				return;
+			}
 		} else if (interaction.options.getSubcommand() === 'remove') {
 
 		} else if (interaction.options.getSubcommand() === 'list') {
@@ -41,6 +106,35 @@ const exportedMethods = {
 
 		return;
 	}
+};
+
+// =============================== Bdays Specific Helper Function ===============================
+
+const validateBirthdate = (userBirthdate, birthdateArray) => {
+	// Check if date is an actual date  || If there are only three elements in array
+	// Only checks 01/01/1970 to future || (month, day, year)
+	if (!Date.parse(userBirthdate) || birthdateArray.length !== 3) {
+		throw { code: 601, msg: 'Error: Birthday not recognized. Make sure it is a valid date in the correct format (mm/dd/yyyy)' };
+	}
+
+	// Convert the users date to the correct format
+	// Set the hours, minutes, seconds, milliseconds to 0
+	// (UTC time is 4 hours ahead of EST so it saves as +4 hours)
+	const date = new Date(birthdateArray[2], birthdateArray[0] - 1, birthdateArray[1]);
+	date.setHours(0, 0, 0, 0);
+
+	// Get the current date
+	// Set the hours, minutes, seconds, milliseconds to 0
+	const currentDate = new Date();
+	currentDate.setHours(0, 0, 0, 0);
+
+	// Check if the users date is ahead of the current date
+	// i.e Person not born yet
+	if (date > currentDate) {
+		throw { code: 601, msg: 'Error: Birthday not recognized. Please enter a valid date.' };
+	}
+
+	return date;
 };
 
 export default exportedMethods;
