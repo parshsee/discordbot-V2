@@ -252,7 +252,7 @@ const exportedMethods = {
 
 		}
 
-		await interaction.editReply({ content: 'Boop' });
+		return;
 	},
 };
 
