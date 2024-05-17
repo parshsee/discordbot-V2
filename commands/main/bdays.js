@@ -94,6 +94,56 @@ const exportedMethods = {
 				return;
 			}
 		} else if (interaction.options.getSubcommand() === 'remove') {
+			// Get the id from options
+			const id = interaction.options.getInteger('id');
+			// Get the guild id
+			const guildId = interaction.guild.id;
+
+			try {
+				// Call the .findOneAndUpdate() function from Mongoose Models to remove the birthday object from database (if it exists)
+				// Takes 3 params, the search query, the actual operation, optional parameters
+				// Search Query: Find where the guild id matches the _id AND birthday subdoc id equals the id given
+				// Operation: Pull (remove) the birthday subdoc from that array where the birthday id matches the id given
+				// Optional Params:
+				//	- Projection: return the specific values listed (0 for no 1 for yes), where the elements that match ($elemMatch) the id are in the birthday array
+				//	- returnDocument: Return the document (normally the entire Guild doc if projection is not specified) before the operation is done
+				// || [] - Short-Circuit Operation to ensure that if can't destructure 'birthdays' array from DB operation then try from an empty array (will result in undefined instead of an error)
+				const { birthdays } = await Guilds.findOneAndUpdate(
+					{
+						$and: [
+							{ _id: guildId },
+							{ 'birthdays.id': id },
+						],
+					},
+					{ $pull: { birthdays: { id: id } } },
+					{
+						projection: { _id: 0, birthdays: { $elemMatch: { id: id } } },
+						returnDocument: 'before',
+					}) || [];
+
+				console.log(`Guild DB called for ${interaction.guild.name}: Bdays - Remove`);
+
+				// Check if the birthdays arr is undefined (no changes made in DB)
+				if (!birthdays) {
+					await interaction.editReply({
+						content: 'Error: Could not remove birthday. Please make sure ID exists within the list of birthdays',
+						ephemeral: true,
+					});
+					return;
+				}
+
+				// Update other Ids in birthday arr subdocs
+				await helper.updateCollectionIDs(id, guildId, 'birthdays');
+
+				// Send message saying the remove operation was a success
+				await interaction.editReply({
+					content: 'Birthday has been removed from the database',
+				});
+
+				return;
+			} catch (error) {
+				console.log(error);
+			}
 
 		} else if (interaction.options.getSubcommand() === 'list') {
 
@@ -105,7 +155,7 @@ const exportedMethods = {
 		});
 
 		return;
-	}
+	},
 };
 
 // =============================== Bdays Specific Helper Function ===============================
