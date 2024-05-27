@@ -17,7 +17,7 @@ const exportedMethods = {
 			subcommand
 				.setName('remove')
 				.setDescription('Remove a birthday (by its ID) from the DB')
-				.addIntegerOption(option => option.setName('id').setDescription('The ID of the birthday in the DB. Use the list command to see all birthdays and IDs').setRequired(true).setMinValue(1)))
+				.addStringOption(option => option.setName('name').setDescription('The first and last name of the user in the DB. Ex: John Doe').setRequired(true)))
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('list')
@@ -58,12 +58,7 @@ const exportedMethods = {
 
 				console.log(`Guild DB called for ${interaction.guild.name}: Bdays - Add`);
 
-				// Create the ID number for the new subdocument
-				// based on amount of quotes (subdocs) already in array
-				const idNumber = guild.birthdays.length + 1;
-
 				const birthday = new Birthdays({
-					id: idNumber,
 					fName: userFirstName,
 					lName: userLastName,
 					birthday: birthdate,
@@ -94,46 +89,66 @@ const exportedMethods = {
 				return;
 			}
 		} else if (interaction.options.getSubcommand() === 'remove') {
-			// Get the id from options
-			const id = interaction.options.getInteger('id');
-			// Get the guild id
-			const guildId = interaction.guild.id;
+			// Get the string with full name
+			const userInput = interaction.options.getString('name');
+			const userInputArr = userInput.split(' ');
+
+			// Check if the user gave the correct amount of arguments
+			if (userInputArr.length !== 2) {
+				await interaction.editReply({
+					content: 'Error: Command needs a First Name and Last Name. Ex: John Doe',
+					ephemeral: true,
+				});
+				return;
+			}
 
 			try {
+				// Gets the first & last names (capitalizing the first letter in each)
+				const userFirstName = userInputArr[0].charAt(0).toUpperCase() + userInputArr[0].slice(1);
+				const userLastName = userInputArr[1].charAt(0).toUpperCase() + userInputArr[1].slice(1);
+				// Get the guild id
+				const guildId = interaction.guild.id;
+
 				// Call the .findOneAndUpdate() function from Mongoose Models to remove the birthday object from database (if it exists)
-				// Takes 3 params, the search query, the actual operation, optional parameters
-				// Search Query: Find where the guild id matches the _id AND birthday subdoc id equals the id given
-				// Operation: Pull (remove) the birthday subdoc from that array where the birthday id matches the id given
+				// Takes 3 params, the search query (filter), the actual operation (update), optional parameters (options)
+				// Search Query: Find where the guild id matches the _id
+				// Operation: Pull (remove) the birthday subdoc from that array where the fName and lName match the given first/last names
 				// Optional Params:
 				//	- Projection: return the specific values listed (0 for no 1 for yes), where the elements that match ($elemMatch) the id are in the birthday array
 				//	- returnDocument: Return the document (normally the entire Guild doc if projection is not specified) before the operation is done
 				// || [] - Short-Circuit Operation to ensure that if can't destructure 'birthdays' array from DB operation then try from an empty array (will result in undefined instead of an error)
 				const { birthdays } = await Guilds.findOneAndUpdate(
+					{ _id: guildId },
 					{
-						$and: [
-							{ _id: guildId },
-							{ 'birthdays.id': id },
-						],
+						$pull: {
+							birthdays: {
+								fName: userFirstName,
+								lName: userLastName,
+							},
+						},
 					},
-					{ $pull: { birthdays: { id: id } } },
 					{
-						projection: { _id: 0, birthdays: { $elemMatch: { id: id } } },
+						projection: {
+							_id: 0, birthdays: {
+								$elemMatch: {
+									fName: userFirstName,
+									lName: userLastName,
+								},
+							},
+						},
 						returnDocument: 'before',
 					}) || [];
 
 				console.log(`Guild DB called for ${interaction.guild.name}: Bdays - Remove`);
 
 				// Check if the birthdays arr is undefined (no changes made in DB)
-				if (!birthdays) {
+				if (!birthdays.length) {
 					await interaction.editReply({
 						content: 'Error: Could not remove birthday. Please make sure ID exists within the list of birthdays',
 						ephemeral: true,
 					});
 					return;
 				}
-
-				// Update other Ids in birthday arr subdocs
-				await helper.updateCollectionIDs(id, guildId, 'birthdays');
 
 				// Send message saying the remove operation was a success
 				await interaction.editReply({
