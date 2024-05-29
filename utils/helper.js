@@ -433,6 +433,35 @@ const getTwitchToken = async () => {
 	}
 };
 
+const chunkSubstr = (str, size) => {
+	// Gets the number of chunks (pretty much the amount of messages that will be sent)
+	const numChunks = Math.ceil(str.length / size);
+	// Creats an array with that many positions
+	const chunks = new Array(numChunks);
+
+	for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+		// Check what str.substr(o, size) returns --- Should be the string until 2048th character
+		// --- If it ends with \n\n then the last game is good (formatted correctly)
+		// --- Else get the index of the last time it was formmated correctly (ending with \n\n)
+		//      Create a new substring that ends when it was last formatted correctly
+		//      Add that substring to the array
+		//      Set o (the starting point of each substring) equal to its value - (size - y)
+		//          Now when o increments by size again it will be where y left off instead of
+		//          going to the next size and skipping all characters inbetween y and size.
+		// console.log("Substring Starting at: " + o + " : " + str.substr(o, size));
+		if (str.substr(o, size).endsWith('\n\n')) {
+			chunks[i] = str.substr(o, size);
+		} else {
+			// eslint-disable-next-line no-inline-comments
+			const y = str.substr(o, size).lastIndexOf('\n\n') + 2; // Reads \n as 1 character
+			const z = str.substr(o, y);
+			chunks[i] = z;
+			o = o - (size - y);
+		}
+	}
+	return chunks;
+};
+
 export {
 	dailyCuteAPI,
 	memeAPI,
@@ -451,4 +480,5 @@ export {
 	getGuildLivePromotionsChannel,
 	getGuildSystemChannel,
 	getGuildBackupChannel,
+	chunkSubstr,
 };
