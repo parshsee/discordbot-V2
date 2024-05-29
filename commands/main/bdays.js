@@ -168,13 +168,10 @@ const exportedMethods = {
 		} else if (interaction.options.getSubcommand() === 'list') {
 			// Get the guild id
 			const guildId = interaction.guild.id;
-			// Create reply message
-			let reply = '';
 
 			try {
 				// Destructure the birthdays subdoc array from the guild doc in DB
 				const { birthdays } = await Guilds.findById({ _id: guildId });
-				console.log(birthdays);
 
 				console.log(`Guild DB called for ${interaction.guild.name}: Bdays - List`);
 
@@ -190,8 +187,8 @@ const exportedMethods = {
 				const currentDate = new Date();
 				currentDate.setHours(0, 0, 0, 0);
 				// Initalize arrays for dates before and after current day
-				const afterCurrDate = [];
-				const beforeCurrDate = [];
+				let afterCurrDate = [];
+				let beforeCurrDate = [];
 
 				birthdays.forEach(birthday => {
 					// Check if the month is ahead
@@ -219,27 +216,13 @@ const exportedMethods = {
 				});
 
 				// Get the sorted arrays
-				const sortedAfterDates = sortArr(afterCurrDate, currentDate);
-				// For each object in the array, format the date and add to reply
-				sortedAfterDates.forEach(birthday => {
-					// Format the date to mm/dd/yyyy
-					const date = `${birthday.bday.toLocaleDateString()}`;
-					// Add to the reply
-					reply += `:birthday: **${birthday.fullName}** \n Birthday: ${date} \n\n`;
-				});
-
+				afterCurrDate = sortArr(afterCurrDate, currentDate);
 				// Get the sorted arrays
-				const sortedBeforeDates = sortArr(beforeCurrDate, currentDate);
-				// For each object in the array, format the date and add to reply
-				sortedBeforeDates.forEach(birthday => {
-					// Format the date to mm/dd/yyyy
-					const date = `${birthday.bday.toLocaleDateString()}`;
-					// Add to the reply
-					reply += `:birthday: **${birthday.fullName}** \n Birthday: ${date} \n\n`;
-				});
+				beforeCurrDate = sortArr(beforeCurrDate, currentDate);
+				// Combine both arrays
+				const sortedDates = afterCurrDate.concat(beforeCurrDate);
 
-				return createAndSendEmbed(reply, interaction);
-
+				return createAndSendEmbed(sortedDates, interaction);
 			} catch (error) {
 				console.log(error);
 			}
@@ -318,35 +301,67 @@ const sortArr = (arr, currentDate) => {
   ([a]wait for embed to be made before sending it)
   Taken from freestuff code
 */
-const createAndSendEmbed = async (text, interaction) => {
-	const testArr = helper.chunkSubstr(text, 2048);
-	// Create generic Embedded Message with necessary fields
-	const embed = helper.createIntitialEmbed(interaction.client);
-
-	let count = 1;
-
-	// Loop through every element
-	for (const chunk of testArr) {
-		// First Embedded Title this
-		// Else every other embedded gets 'Games Cont'
-		if (count === 1) {
-			embed
-				.setTitle('Birthdays');
-			// .setThumbnail(message.guild.iconURL());
-		} else {
-			embed
-				.setTitle('Birthdays Cont.');
-			// .setThumbnail();
+const createAndSendEmbed = async (sortedBirthdates, interaction) => {
+	// Call the helper function to create the initial embed
+	let embed = helper.createIntitialEmbed(interaction.client);
+	// The limit of how many quotes can be in an embed
+	// Only have 25 fields, each column is a different field
+	// Need to set the Name and Birthday column field (so 2)
+	// Must have 3 columns in an inline embed, so third column is set to blank (\u200b)
+	// 8 * 3 = 24, Only 8 birthdays can be in an embed at a time
+	let limit = 8;
+	// Create an array to hold all the embeds
+	const embedArr = [];
+	// Loop through the array getting the birthday object and index
+	sortedBirthdates.forEach((birthday, index) => {
+		// If the index = the limit
+		if (index === limit) {
+			// Set the initial title for first embed and the titles for the others
+			embed.setTitle(index === 8 ? ':birthday: All Birthdays :birthday:' : ':birthday: All Birthdays Cont. :birthday:');
+			// Increase the limit
+			limit += 8;
+			// Add the embed to the array of embeds
+			embedArr.push(embed);
+			// Clear all fields from the embed
+			// Allows me to add another 25 fields
+			embed = helper.createIntitialEmbed(interaction.client);
 		}
-		embed
-			.setDescription(chunk);
-		count += 1;
+
+		console.log(`Index: ${index} --- Limit: ${limit}`);
+		console.log(embed);
+
+		if (index % 8 === 0) {
+			embed.addFields({ name: 'Name', value: `${birthday.fullName}`, inline: true });
+			embed.addFields({ name: 'Birthday', value: `${birthday.bday.toLocaleDateString()}`, inline: true });
+			embed.addFields({ name: '\u200b', value: '\u200b', inline: true });
+			// Else not the first row, titles can be blank
+		} else {
+			embed.addFields({ name: '\u200b', value: `${birthday.fullName}`, inline: true });
+			embed.addFields({ name: '\u200b', value: `${birthday.bday.toLocaleDateString()}`, inline: true });
+			embed.addFields({ name: '\u200b', value: '\u200b', inline: true });
+		}
+	});
+	// Add the remaining embed after it exits for loop
+	// Ensures that the last birthdays are added
+	// I.e if 28 birthdays in db, 24 will get added with code above, last 4 will get added with this
+	embed.setTitle(':birthday: All Birthdays Cont. :birthday:');
+	embedArr.push(embed);
+
+	// Create the chunksize, this is the amount of embeds that can be sent in one interaction (10)
+	const chunkSize = 10;
+	// Loop through the array of embeds, sending messages for every 10 embeds
+	for (let index = 0; index < embedArr.length; index += chunkSize) {
+		// Slice (create shallow copy of portion of array) the embed array to get 10 embeds
+		// Will be from (0, 9), (10, 19), etc depending on amount of embeds created
+		const chunk = embedArr.slice(index, index + chunkSize);
 
 		// Send a followUp interaction with the embed chunk
 		await interaction.followUp({
-			embeds: [embed],
+			embeds: chunk,
 		});
 	}
+
+	return;
 };
 
 export default exportedMethods;
