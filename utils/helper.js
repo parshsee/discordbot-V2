@@ -327,6 +327,70 @@ const streamChecker = async (client) => {
 	}
 };
 
+const birthdayChecker = async (client) => {
+	try {
+		// Get the guilds
+		const guilds = await Guild.find({});
+
+		// Loop through each guild
+		guilds.forEach(async guild => {
+			// Check if there are any birthdays in guild DB
+			if (!guild.birthdays.length) {
+				console.log(`No Birthdays in DB for Guild: ${guild._id}. Skipping Birthday Check...`);
+				return;
+			}
+
+			// TODO: DST
+			// May need to add Daylight Saving Time calc depending on Server time
+
+			// Get the current date
+			// Get the current month & day in mm/dd format
+			// Get the current year
+			const currentDate = new Date();
+			currentDate.setSeconds(0, 0);
+			const currentMonthDay = `${currentDate.getMonth() + 1}/${currentDate.getDate()}`;
+			const currentYear = currentDate.getFullYear();
+
+			guild.birthdays.forEach(birthday => {
+				const birthdayDate = `${birthday.birthday.getMonth() + 1}/${birthday.birthday.getDate()}`;
+				const birthdayYear = birthday.birthday.getFullYear();
+
+				// If the birthday month and date are the same as the current month and day
+				// Send a message to the general channel
+				if (birthdayDate === currentMonthDay) {
+					// Need to get the Discord Guild object from the client (bot) guild cache (Collection of Guilds bot is in) that corresponds to the Guild Id stored in DB
+					const discordGuild = client.guilds.cache.find(dGuild => dGuild.id === guild.id);
+					// Use the Discord Guild to get the live-promotions channel for that guild
+					const sysChannel = getGuildSystemChannel(discordGuild);
+
+					if (!sysChannel) {
+						// Get a backup channel, any channel bot has permission to send messages to
+						const backupChannel = getGuildBackupChannel(discordGuild);
+
+						// If there are no text channels that the bot can send messages to, log an additional error message and exit
+						if (!backupChannel) {
+							console.log(`Error: ${guild.name} Guild has no text channels that bot can send messages to. *** CANNOT INFORM GUILD ON BIRTHDAYS ***`);
+							return;
+						}
+
+						// Send birthday message to backup channel
+						backupChannel.send({ content: `@everyone, ${birthday.fName} turns ${currentYear - birthdayYear} today!` });
+						console.log(`Guild ${guild._id}: Birthday sent to Backup Channel`);
+					}
+
+					// Send birthday message to system channel
+					sysChannel.send({ content: `@everyone, ${birthday.fName} turns ${currentYear - birthdayYear} today!` });
+					console.log(`Guild ${guild._id}: Birthday sent to Sys Channel`);
+				}
+			});
+		});
+
+		return;
+	} catch (error) {
+		console.log(error);
+	}
+};
+
 // Create confirm button
 const confirm = new ButtonBuilder()
 	.setCustomId('confirm')
@@ -470,6 +534,7 @@ export {
 	twitchTokenValidator,
 	twitchUserAPI,
 	streamChecker,
+	birthdayChecker,
 	updateCollectionIDs,
 	confirm,
 	cancel,
