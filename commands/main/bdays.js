@@ -228,11 +228,6 @@ const exportedMethods = {
 			}
 		}
 
-		// TODO: Delete
-		await interaction.editReply({
-			content: 'Boop',
-		});
-
 		return;
 	},
 };
