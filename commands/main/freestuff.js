@@ -50,6 +50,42 @@ const exportedMethods = {
 		// Defer the reply to give the DB more than 3 seconds to respond
 		await interaction.deferReply();
 
+		if (interaction.options.getSubcommand() === 'add') {
+			const gameName = interaction.options.getString('game-name');
+			const gameKey = interaction.options.getString('game-key');
+			const gameType = interaction.options.getString('type');
+			const gamePlatform = interaction.options.getString('platform');
+
+			switch (gamePlatform) {
+				case 'Steam':
+					validateSteamKey(gameKey);
+					break;
+				case 'Microsoft':
+					validateMicrosoftKey(gameKey);
+					break;
+				case 'GOG':
+					validateGOGKey(gameKey);
+					break;
+				case 'Origin':
+					validateOriginKey(gameKey);
+					break;
+				case 'Epic':
+					validateEpicKey(gameKey);
+					break;
+				case 'Uplay':
+					validateUplayKey(gameKey);
+					break;
+				default:
+					break;
+			}
+
+
+
+		} else if (interaction.options.getSubcommand() === 'claim') {
+
+		} else if (interaction.options.getSubcommand() === 'list') {
+
+		}
 
 		// TODO: Delete
 		await interaction.editReply({
