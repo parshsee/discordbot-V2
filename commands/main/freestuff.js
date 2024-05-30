@@ -93,34 +93,38 @@ const exportedMethods = {
 				return;
 			}
 
-			// Get the guild id
-			const guildId = interaction.guild.id;
-			// Get the guild document from the database
-			const guild = await Guilds.findById({ _id: guildId });
+			try {
+				// Get the guild id
+				const guildId = interaction.guild.id;
+				// Get the guild document from the database
+				const guild = await Guilds.findById({ _id: guildId });
 
-			console.log(`Guild DB called for ${interaction.guild.name}: Freestuff - Add`);
+				console.log(`Guild DB called for ${interaction.guild.name}: Freestuff - Add`);
 
-			// Create new games document
-			const game = new Games({
-				gameName: gameName,
-				gameKey: gameKey,
-				gameType: gameType,
-				codeType: gamePlatform,
-			});
+				// Create new games document
+				const game = new Games({
+					gameName: gameName,
+					gameKey: gameKey,
+					gameType: gameType,
+					codeType: gamePlatform,
+				});
 
-			// Add the game subdocument to the array of games
-			// Save the guild document
-			guild.games.push(game);
-			await guild.save();
+				// Add the game subdocument to the array of games
+				// Save the guild document
+				guild.games.push(game);
+				await guild.save();
 
-			console.log(`Guild DB saved for ${interaction.guild.name}: Freestuff - Add`);
+				console.log(`Guild DB saved for ${interaction.guild.name}: Freestuff - Add`);
 
-			// Send response back saying success
-			await interaction.editReply({
-				content: 'Game Added Successfully',
-			});
+				// Send response back saying success
+				await interaction.editReply({
+					content: 'Game Added Successfully',
+				});
 
-			return;
+				return;
+			} catch (error) {
+				console.log(error);
+			}
 		} else if (interaction.options.getSubcommand() === 'claim') {
 
 		} else if (interaction.options.getSubcommand() === 'list') {
