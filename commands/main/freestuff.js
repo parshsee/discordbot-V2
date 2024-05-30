@@ -48,7 +48,8 @@ const exportedMethods = {
 				.setDescription('Shows a list of all games in the DB')),
 	async execute(interaction) {
 		// Defer the reply to give the DB more than 3 seconds to respond
-		await interaction.deferReply();
+		// Set it to ephemeral so others wont see game key (means edit response and followup will also be ephemeral)
+		await interaction.deferReply({ ephemeral: true });
 
 		if (interaction.options.getSubcommand() === 'add') {
 			// Get the game name, key, type, and platform from options
@@ -83,8 +84,43 @@ const exportedMethods = {
 					break;
 			}
 
+			// Check if any errors in validation
+			// Return error message
+			if (errors.found) {
+				await interaction.editReply({
+					content: errors.message,
+				});
+				return;
+			}
 
+			// Get the guild id
+			const guildId = interaction.guild.id;
+			// Get the guild document from the database
+			const guild = await Guilds.findById({ _id: guildId });
 
+			console.log(`Guild DB called for ${interaction.guild.name}: Freestuff - Add`);
+
+			// Create new games document
+			const game = new Games({
+				gameName: gameName,
+				gameKey: gameKey,
+				gameType: gameType,
+				codeType: gamePlatform,
+			});
+
+			// Add the game subdocument to the array of games
+			// Save the guild document
+			guild.games.push(game);
+			await guild.save();
+
+			console.log(`Guild DB saved for ${interaction.guild.name}: Freestuff - Add`);
+
+			// Send response back saying success
+			await interaction.editReply({
+				content: 'Game Added Successfully',
+			});
+
+			return;
 		} else if (interaction.options.getSubcommand() === 'claim') {
 
 		} else if (interaction.options.getSubcommand() === 'list') {
