@@ -51,6 +51,19 @@ const exportedMethods = {
 		// Set it to ephemeral so others wont see game key (means edit response and followup will also be ephemeral)
 		await interaction.deferReply({ ephemeral: true });
 
+		// Get the freestuff channel
+		// NOTE: THIS COMMAND AND SUBCOMMANDS ARE ONLY ALLOWED IN FREESTUFF CHANNEL
+		const freestuffChannel = helper.getGuildFreestuffChannel(interaction.guild);
+
+		// Check if freestuff channel doesn't exist OR the command was ran from a different channel
+		// Return error message
+		if (!freestuffChannel || freestuffChannel.id !== interaction.channelId) {
+			await interaction.editReply({
+				content: 'Error: Command can only be used in freestuff channel. A moderator can run the slash command \'/create-required-channels\' to create the necessary channels if it doesn\'t exist',
+			});
+			return;
+		}
+
 		if (interaction.options.getSubcommand() === 'add') {
 			// Get the game name, key, type, and platform from options
 			const gameName = interaction.options.getString('game-name');
@@ -119,6 +132,11 @@ const exportedMethods = {
 				// Send response back saying success
 				await interaction.editReply({
 					content: 'Game Added Successfully',
+				});
+
+				await interaction.followUp({
+					content: 'A game has been added to freestuff',
+					ephemeral: false,
 				});
 
 				return;
