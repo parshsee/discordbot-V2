@@ -302,6 +302,11 @@ const streamChecker = async (client) => {
 						const discordGuild = client.guilds.cache.find(dGuild => dGuild.id === guild.id);
 						// Use the Discord Guild to get the live-promotions channel for that guild
 						const livePromotionsChannel = getGuildLivePromotionsChannel(discordGuild);
+
+						// TODO: Edge Case
+						// Chance that livePromotionChannel is null if users did not create it in server (or deleted it)
+						// Check if null, send to Sys Channel with additional message (or backup channel with additional message)
+
 						// Send the embed to the channel
 						livePromotionsChannel.send({ embeds: [embed] });
 
