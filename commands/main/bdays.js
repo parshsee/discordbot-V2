@@ -69,7 +69,7 @@ const exportedMethods = {
 					birthday: birthdate,
 				});
 
-				// Add the quote subdocument to the array of quotes
+				// Add the birthday subdocument to the array of birthdays
 				// Save the guild document
 				guild.birthdays.push(birthday);
 				await guild.save();
@@ -299,7 +299,7 @@ const sortArr = (arr, currentDate) => {
 const createAndSendEmbed = async (sortedBirthdates, interaction) => {
 	// Call the helper function to create the initial embed
 	let embed = helper.createIntitialEmbed(interaction.client);
-	// The limit of how many quotes can be in an embed
+	// The limit of how many birthdays can be in an embed
 	// Only have 25 fields, each column is a different field
 	// Need to set the Name and Birthday column field (so 2)
 	// Must have 3 columns in an inline embed, so third column is set to blank (\u200b)
@@ -321,9 +321,6 @@ const createAndSendEmbed = async (sortedBirthdates, interaction) => {
 			// Allows me to add another 25 fields
 			embed = helper.createIntitialEmbed(interaction.client);
 		}
-
-		console.log(`Index: ${index} --- Limit: ${limit}`);
-		console.log(embed);
 
 		if (index % 8 === 0) {
 			embed.addFields({ name: 'Name', value: `${birthday.fullName}`, inline: true });
