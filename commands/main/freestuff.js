@@ -146,7 +146,41 @@ const exportedMethods = {
 		} else if (interaction.options.getSubcommand() === 'claim') {
 
 		} else if (interaction.options.getSubcommand() === 'list') {
+			try {
+				// Get the guild id
+				const guildId = interaction.guild.id;
+				// Destructure the games subdoc array from the guild doc in DB
+				const { games } = await Guilds.findById({ _id: guildId });
 
+				console.log(`Guild DB called for ${interaction.guild.name}: Quotes - List`);
+
+				// Check if the games array is empty (no games in DB)
+				if (!games.length) {
+					await interaction.editReply({
+						content: 'No games exist in database!',
+					});
+					return;
+				}
+
+				// Sort the subdoc array by gameName alphabetically
+				games.sort((a, b) => {
+					if (a.gameName < b.gameName) return -1;
+					if (a.gameName > b.gameName) return 1;
+					return 0;
+				});
+
+				// Create an object to hold counters for same game names
+				// https://stackoverflow.com/questions/5667888/counting-the-occurrences-frequency-of-array-elements
+				const counts = {};
+				games.forEach(game => {
+					counts[game.gameName] = counts[game.gameName] ? counts[game.gameName] + 1 : 1;
+				});
+
+				return createAndSendEmbed(interaction, games, counts);
+
+			} catch (error) {
+				console.log(error);
+			}
 		}
 
 		// TODO: Delete
@@ -399,6 +433,75 @@ const validateUplayKey = (key) => {
 	}
 
 	return errors;
+};
+
+const createAndSendEmbed = async (interaction, games, count) => {
+	// Call the helper function to create the initial embed
+	let embed = helper.createIntitialEmbed(interaction.client);
+	// The limit of how many games can be in an embed
+	// Only have 25 fields, each column is a different field
+	// Need to set the Game Name, Game Type, and Redeemable column field (so 3)
+	// 8 * 3 = 24, Only 8 games can be in an embed at a time
+	let limit = 8;
+	// Create an array to hold all the embeds
+	const embedArr = [];
+
+	// Loop through the array getting the game object and index
+	games.forEach((game, index) => {
+		// If the index = the limit
+		if (index === limit) {
+			// Set the initial title for first embed and the titles for the others
+			embed.setTitle(index === 8 ? ':free: All Games :free:' : ':free: All Games Cont. :free:');
+			// Increase the limit
+			limit += 8;
+			// Add the embed to the array of embeds
+			embedArr.push(embed);
+			// Clear all fields from the embed
+			// Allows me to add another 25 fields
+			embed = helper.createIntitialEmbed(interaction.client);
+		}
+
+		// Check if the game name is in the count object
+		// If not, go to next loop
+		if (!count[game.gameName]) return;
+
+		if (index % 8 === 0) {
+			embed.addFields({ name: 'Game Name', value: `${game.gameName} x${count[game.gameName]}`, inline: true });
+			embed.addFields({ name: 'Game Type', value: `${game.gameType}`, inline: true });
+			embed.addFields({ name: 'Redeemable On', value: `${game.codeType}`, inline: true });
+			// Else not the first row, titles can be blank
+		} else {
+			embed.addFields({ name: '\u200b', value: `${game.gameName} x${count[game.gameName]}`, inline: true });
+			embed.addFields({ name: '\u200b', value: `${game.gameType}`, inline: true });
+			embed.addFields({ name: '\u200b', value: `${game.codeType}`, inline: true });
+		}
+
+		// Delete the gameName key/value from count object
+		// Ensures only 1 field per game will be added due to if check above
+		delete count[game.gameName];
+	});
+
+	// Add the remaining embed after it exits for loop
+	// Ensures that the last games are added
+	// I.e if 28 games in db, 24 will get added with code above, last 4 will get added with this
+	embed.setTitle(':free: All Games Cont. :free:');
+	embedArr.push(embed);
+
+	// Create the chunksize, this is the amount of embeds that can be sent in one interaction (10)
+	const chunkSize = 10;
+	// Loop through the array of embeds, sending messages for every 10 embeds
+	for (let index = 0; index < embedArr.length; index += chunkSize) {
+		// Slice (create shallow copy of portion of array) the embed array to get 10 embeds
+		// Will be from (0, 9), (10, 19), etc depending on amount of embeds created
+		const chunk = embedArr.slice(index, index + chunkSize);
+
+		// Send a followUp interaction with the embed chunk
+		await interaction.followUp({
+			embeds: chunk,
+		});
+	}
+
+	return;
 };
 
 export default exportedMethods;
