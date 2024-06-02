@@ -130,10 +130,11 @@ const exportedMethods = {
 				console.log(`Guild DB saved for ${interaction.guild.name}: Freestuff - Add`);
 
 				// Send response back saying success
+				// This will be ephemeral
 				await interaction.editReply({
 					content: 'Game Added Successfully',
 				});
-
+				// Send a new message that everyone can see
 				await interaction.followUp({
 					content: 'A game has been added to freestuff',
 					ephemeral: false,
@@ -144,6 +145,61 @@ const exportedMethods = {
 				console.log(error);
 			}
 		} else if (interaction.options.getSubcommand() === 'claim') {
+			// Get the game name from options
+			const gameName = interaction.options.getString('game-name');
+
+			try {
+				// Get the guild id
+				const guildId = interaction.guild.id;
+				// Get the guild doc from the db
+				// Cannot use findOneAndUpdate() with $pull (like in bdays command) because
+				// $pull would remove all occurerences, issue arises when searching for game name where multiple copies exist
+				// it would remove all copies of that game name and their codes
+				// https://stackoverflow.com/questions/32018889/how-to-pull-one-instance-of-an-item-in-an-array-in-mongodb --- Cannot use this because need to have the game object returned to get game key, $unset will make the object null
+				const guild = await Guilds.findById({ _id: guildId });
+
+				console.log(`Guild DB called for ${interaction.guild.name}: Freestuff - Claim`);
+
+				// Find the first occurence of the gameName using findIndex, returns -1 if no match found
+				const gameIndex = guild.games.findIndex(game => game.gameName === gameName);
+
+				// Check if the games arr is undefined or empty (no games in DB) OR gameIndex is -1, no game name matched in the array of games
+				if (!guild.games.length || gameIndex === -1) {
+					await interaction.editReply({
+						content: 'Error: Could not claim game. Please make sure game name exists within list of games and is spelt exaclty the same',
+					});
+					return;
+				}
+
+				// Then splice the games array to remove that game object --- Modifies games array
+				// Returns an array containing the deleted element, or empty array if no elements removed
+				// Added [0] to access the first (and should be only) value in spliced array, so gameInfo would be that object instead of the array containing the object
+				const gameInfo = guild.games.splice(gameIndex, 1)[0];
+
+				// Send a message to the channel letting user know to check DMs
+				// This will be ephemeral
+				await interaction.editReply({
+					content: 'Game information sent to DMs',
+				});
+				// Send a message to the channel that everyone can see that a game was claimed
+				await interaction.followUp({
+					content: `A copy of ${gameInfo.gameName} has been claimed by ${interaction.member.displayName}`,
+					ephemeral: false,
+				});
+				// Send the DM to user with game info
+				await interaction.member.send({
+					content: `Game Claimed: ${gameInfo.gameName}\nKey: ${gameInfo.gameKey}\nRedeemable On: ${gameInfo.codeType}`,
+				});
+
+				// Save the guild doc to update the games array that was spliced
+				await guild.save();
+
+				console.log(`Guild DB saved for ${interaction.guild.name}: Freestuff - Claim`);
+
+				return;
+			} catch (error) {
+				console.log(error);
+			}
 
 		} else if (interaction.options.getSubcommand() === 'list') {
 			try {
@@ -152,7 +208,7 @@ const exportedMethods = {
 				// Destructure the games subdoc array from the guild doc in DB
 				const { games } = await Guilds.findById({ _id: guildId });
 
-				console.log(`Guild DB called for ${interaction.guild.name}: Quotes - List`);
+				console.log(`Guild DB called for ${interaction.guild.name}: Freestuff - List`);
 
 				// Check if the games array is empty (no games in DB)
 				if (!games.length) {
@@ -182,11 +238,6 @@ const exportedMethods = {
 				console.log(error);
 			}
 		}
-
-		// TODO: Delete
-		await interaction.editReply({
-			content: 'Boop',
-		});
 	},
 };
 
