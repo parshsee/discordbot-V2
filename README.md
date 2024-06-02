@@ -42,20 +42,14 @@ Similar to the first bot, this will also utilize JavaScript and MongoDB as well 
 - [leaderboard](#leaderboard)
 - [meme](#meme)
 - [quotes](#quotes)
-- [twitch](#twitch)
 - [stats](#stats)
+- [twitch](#twitch)
+
 
 ## Command Descriptions
-### Add
-Adds a specified game and key to the database. Support for Steam, Microsoft, GOG, Origin, Uplay, and Epic game codes
-### Bday
-Adds or removes a birthday from the database
 ### Bdays
+Adds or removes a birthday from the database
 Shows all birthdays in database or a specific one
-### Claim
-Command to claim a game from the database
-### Commands
-View all available commands from bot
 ### Dailycute
 Call API and retrieve random cute animal image and animal fact
 ### Delete
@@ -66,22 +60,23 @@ Adds or Removes an event from the database
 Shows all events in database or a specific one
 ### Freestuff
 Shows all available games in database or searches for a specific game. Multiple copies of the same game will appear as [game name] x[# of copies]
+Adds a specified game and key to the database. Support for Steam, Microsoft, GOG, Origin, Uplay, and Epic game codes
+Command to claim a game from the database
 ### Info
 Call API to retrieve information about a specified game with optional searching for specific year
 ### Leaderboard
 Starts or ends a leaderboard, adds or removes players from a leaderboard, updates scores for players for a leaderboard
 ### Meme
 Call API to retrieve a meme from a random subreddit (dankmemes, memes, me_irl) or a specified one. You can also now create your memes using ia!meme create
-### Quote
-Adds or Removes a quote from the bot
 ### Quotes
+Adds or Removes a quote from the bot
 Gets a random quote, specific quote, or lists all quotes
 ### Twitch
 Adds or removes a Twitch streamer from the database or shows all streamers
 ### Stats
 Show information on the server or on a specific user from their user id or mention
 
-[Back To The Top](#Immature-Bot)
+[Back To The Top](#Immature-Bot-V2)
 
 ## References
 ### APIs Used
@@ -95,4 +90,4 @@ Meme Creation API: https://github.com/jacebrowning/memegen
 
 Twitch API: https://dev.twitch.tv/docs/api/
 
-[Back To The Top](#Immature-Bot)
+[Back To The Top](#Immature-Bot-V2)
