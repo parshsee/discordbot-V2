@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import Birthdays from './birthdays.js';
-import Events from './events.js';
 import Games from './games.js';
 import Quotes from './quotes.js';
 import Streamers from './streamers.js';
@@ -15,7 +14,6 @@ import Streamers from './streamers.js';
 const guildSchema = new mongoose.Schema({
 	_id: { type: String, required: true },
 	birthdays: { type: [Birthdays.schema] },
-	events: { type: [Events.schema] },
 	games: { type: [Games.schema] },
 	quotes: { type: [Quotes.schema] },
 	streamers: { type: [Streamers.schema] },
