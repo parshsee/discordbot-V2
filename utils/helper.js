@@ -303,13 +303,34 @@ const streamChecker = async (client) => {
 						// Use the Discord Guild to get the live-promotions channel for that guild
 						const livePromotionsChannel = getGuildLivePromotionsChannel(discordGuild);
 
-						// TODO: Edge Case
 						// Chance that livePromotionChannel is null if users did not create it in server (or deleted it)
 						// Check if null, send to Sys Channel with additional message (or backup channel with additional message)
+						if (!livePromotionsChannel) {
+							console.log(`Guild: ${discordGuild.id} has no live-promotions channel. Sending to Sys Channel...`);
+							// Get the system channel
+							const sysChannel = getGuildSystemChannel(discordGuild);
 
-						// Send the embed to the channel
-						livePromotionsChannel.send({ embeds: [embed] });
+							if (!sysChannel) {
+								console.log(`Guild: ${discordGuild.id} has no sys channel. Sending to Backup Channel...`);
+								// Get a backup channel, any channel bot has permission to send messages to
+								const backupChannel = getGuildBackupChannel(discordGuild);
 
+								// If there are no text channels that the bot can send messages to, log an additional error message and exit
+								if (!backupChannel) {
+									console.log(`Error: ${guild.name} Guild has no text channels that bot can send messages to. *** CANNOT INFORM GUILD ON LIVE PROMOTION ***`);
+									return;
+								}
+
+								// Send live promotion message to backup channel
+								backupChannel.send({ embeds: [embed] });
+							} else {
+								// Send live promotion message to system channel
+								sysChannel.send({ embeds: [embed] });
+							}
+						} else {
+							// Send the embed to the channel
+							livePromotionsChannel.send({ embeds: [embed] });
+						}
 						// Update the streamer subdocument information
 						streamer.gameTitle = onlineStreamer.game_name;
 						streamer.status = 'Live';
@@ -381,6 +402,7 @@ const birthdayChecker = async (client) => {
 						// Send birthday message to backup channel
 						backupChannel.send({ content: `@everyone, ${birthday.fName} turns ${currentYear - birthdayYear} today!` });
 						console.log(`Guild ${guild._id}: Birthday sent to Backup Channel`);
+						return;
 					}
 
 					// Send birthday message to system channel
