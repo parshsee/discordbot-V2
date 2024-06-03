@@ -56,10 +56,15 @@ const exportedMethods = {
 				// Get the guild document from the database
 				const guild = await Guilds.findById({ _id: guildId });
 
-				// TODO
 				// Check if fName and lName already exist within guilds birthdays subdoc
 				// SHOULD NOT BE ABLE TO ADD SAME USER MULTIPLE TIMES
-				// ********************************************************************
+				if (guild.birthdays.find(birthday => birthday.fName === userFirstName && birthday.lName === userLastName)) {
+					await interaction.editReply({
+						content: 'Error: A person with that name already exists in DB.',
+						ephemeral: true,
+					});
+					return;
+				}
 
 				console.log(`Guild DB called for ${interaction.guild.name}: Bdays - Add`);
 
