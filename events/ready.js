@@ -15,11 +15,6 @@ const exportedMethods = {
 		// Connect to database
 		await dbConnection();
 
-		/* TODO:
-			Create job schedules for all necessary DB functions once implemented
-				- Birthday, Event(?), Twitch Token, Streamer
-		*/
-
 		// Use node-scheduler to create a cron-job that runs every minute
 		// Calls the twitch token validator, to check that the token is not expired (if it is, it will retrieve a new token as well)
 		scheduleJob('*/1 * * * *', async () => helper.twitchTokenValidator());
