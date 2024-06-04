@@ -425,9 +425,27 @@ const eventsChcker = async (client) => {
 		// https://discord.js.org/#/docs/discord.js/main/class/Guild
 
 		// Get the reminders channel for the guild
-		const remindersChannel = getGuildRemindersChannel(guild);
+		let channel = getGuildRemindersChannel(guild);
+		// Set reminder boolean to true, for additional message when sending
+		let isReminderChannel = true;
 
-		// TODO: Check if reminders is null, then get Sys and possibly backup
+		// Check if reminders is null, then get Sys and possibly backup
+		if (!channel) {
+			console.log(`Guild: ${guild.id} has no reminders channel. Checking Sys Channel...`);
+			// Set reminder boolean to true, for additional message when sending
+			isReminderChannel = false;
+			channel = getGuildSystemChannel(guild);
+
+			if (!channel) {
+				console.log(`Guild: ${guild.id} has no sys channel. Checking Backup Channel...`);
+				channel = getGuildBackupChannel(guild);
+
+				if (!channel) {
+					console.log(`Error: ${guild.id} Guild has no text channels that bot can send messages to. *** CANNOT INFORM GUILD ON REMINDERS ***`);
+					return;
+				}
+			}
+		}
 
 		// Loop through all the scheduled events in a guild
 		guild.scheduledEvents.cache.forEach(async (event) => {
@@ -453,9 +471,12 @@ const eventsChcker = async (client) => {
 					scheduledUsers = scheduledUsers.map(user => user.user);
 
 					// Send the message to reminders channel
-					await remindersChannel.send({
+					// By sending the user object, it will get sent as an @
+					await channel.send({
 						content: `Reminder: ${event.name} will start tomorrow! Users: ${scheduledUsers.join(' ')}`,
 					});
+					console.log(`Guild: ${guild.id} Reminder Sent`);
+					if (!isReminderChannel) await channel.send({ content: 'No Reminder Channel Found: A moderator can run the slash command \'/create-required-channels\' to create the necessary channels' });
 				}
 			}
 		});
