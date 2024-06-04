@@ -418,6 +418,50 @@ const birthdayChecker = async (client) => {
 	}
 };
 
+const eventsChcker = async (client) => {
+	// Loop through all the guilds the bot is in
+	client.guilds.cache.forEach(guild => {
+		// guild is th Guild object from Discord
+		// https://discord.js.org/#/docs/discord.js/main/class/Guild
+
+		// Get the reminders channel for the guild
+		const remindersChannel = getGuildRemindersChannel(guild);
+
+		// TODO: Check if reminders is null, then get Sys and possibly backup
+
+		// Loop through all the scheduled events in a guild
+		guild.scheduledEvents.cache.forEach(async (event) => {
+			// If the event status is set to be scheduled -- Statuses are: Active, Scheduled, Cancelled, Completed
+			if (event.isScheduled()) {
+				const startDateTime = event.scheduledStartAt;
+
+				// Get tomorrows date by getting a new Date (which would be today) and adding 1 (making it tomorrow)
+				const tomorrow = new Date();
+				tomorrow.setDate(tomorrow.getDate() + 1);
+
+				// Check if the event Date is the same as tomorrows Date
+				// If the event Month is the same as tomorrows Month
+				// If the event Year is the same as tomrrows Year
+				// All true = Event starts tomorrow
+				if (startDateTime.getDate() === tomorrow.getDate()
+					&& startDateTime.getMonth() === tomorrow.getMonth()
+					&& startDateTime.getFullYear() === tomorrow.getFullYear()) {
+
+					// Get the users that registered as 'interested' in the event
+					let scheduledUsers = await event.fetchSubscribers();
+					// Return only the user objects
+					scheduledUsers = scheduledUsers.map(user => user.user);
+
+					// Send the message to reminders channel
+					await remindersChannel.send({
+						content: `Reminder: ${event.name} will start tomorrow! Users: ${scheduledUsers.join(' ')}`,
+					});
+				}
+			}
+		});
+	});
+};
+
 // Create confirm button
 const confirm = new ButtonBuilder()
 	.setCustomId('confirm')
@@ -562,6 +606,7 @@ export {
 	twitchUserAPI,
 	streamChecker,
 	birthdayChecker,
+	eventsChcker,
 	updateCollectionIDs,
 	confirm,
 	cancel,
