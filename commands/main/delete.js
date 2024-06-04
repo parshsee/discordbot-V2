@@ -1,4 +1,5 @@
-import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import { ActionRowBuilder, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import { confirm, cancel } from '../../utils/helper.js';
 
 // Set DefaultMemberPermission so only Admin/Moderators can use it
 const exportedMethods = {
@@ -22,6 +23,62 @@ const exportedMethods = {
 		const channel = interaction.options.getChannel('channel') || interaction.channel;
 		// Get the amount to remove from options OR if the options return null (none given), set it to 1 message
 		const removeAmount = interaction.options.getInteger('amount') || 1;
+
+		// Add a confirmation followup if amount to delete is greater than 5
+		if (removeAmount > 5) {
+			// Create an action row with confirm and cancel buttons
+			const row = new ActionRowBuilder()
+				.addComponents(confirm, cancel);
+
+			const response = await interaction.reply({
+				content: `Are you sure you want to delete ${removeAmount} messages from ${channel.name}`,
+				components: [row],
+				ephemeral: true,
+			});
+
+			// Create a filter (function expression) to ensure that only the user who triggered the original interaction can use the buttons
+			const collectorFilter = i => i.user.id === interaction.user.id;
+
+			try {
+				// Wait for an interaction (that passes the collection filter) within the given time
+				const confirmation = await response.awaitMessageComponent({
+					filter: collectorFilter,
+					time: 60000,
+				});
+
+				// If the confirmation is collected (passed the filter) within the given time, check which button was clicked
+				if (confirmation.customId === 'confirm') {
+					console.log(`Guild: ${interaction.guild.id} deleting ${removeAmount} messages from Channel: ${channel.name}`);
+
+					// Call bulkDelete() to remove the amount of messages, including those older than 2 weeks (second param true)
+					await channel.bulkDelete(removeAmount, true);
+
+					// Update original message to say messages were deleted, remove the components
+					await confirmation.update({
+						content: `Deleted ${removeAmount} messages from Channel: ${channel.name}`,
+						components: [],
+					});
+
+					return;
+				} else if (confirmation.customId === 'cancel') {
+					// If the cancel option is chosen, update original message to say cancelled and remove the components
+					await confirmation.update({
+						content: 'Action cancelled',
+						components: [],
+					});
+
+					return;
+				}
+			} catch (error) {
+				// If error is thrown (most likely timeout), edit the reply and remove the components
+				await interaction.editReply({
+					content: 'Confirmation not recieved within 1 minute, cancelling',
+					components: [],
+				});
+
+				return;
+			}
+		}
 
 		// Call bulkDelete() to remove the amount of messages, including those older than 2 weeks (second param true)
 		await channel.bulkDelete(removeAmount, true);
