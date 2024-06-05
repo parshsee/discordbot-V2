@@ -23,8 +23,9 @@ Similar to the first bot, this will also utilize JavaScript and MongoDB as well 
 		- Quotes : This command will now be able to add, remove, list, and show specific quote. This combines quote and quotes commands
 		- Freestuff : This command will now be able to add, claim, list, and show specific game. This combines add, claim, and freestuff commands
 - Changes to be Considered
-	- Removing the delete command
 	- Removing the leaderboard command
+	- Adding command to create Discord Events
+	- Adding Discord thread support
 
 ### Technologies
 - Discord
@@ -64,7 +65,7 @@ Adds a specified game and key to the database. Support for Steam, Microsoft, GOG
 Command to claim a game from the database
 ### Info
 Call API to retrieve information about a specified game with optional searching for specific year
-### Leaderboard
+### Leaderboard --- Not Implemented Yet
 Starts or ends a leaderboard, adds or removes players from a leaderboard, updates scores for players for a leaderboard
 ### Meme
 Call API to retrieve a meme from a random subreddit (dankmemes, memes, me_irl) or a specified one. You can also now create your memes using ia!meme create
