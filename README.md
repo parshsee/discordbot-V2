@@ -72,10 +72,10 @@ Call API to retrieve a meme from a random subreddit (dankmemes, memes, me_irl) o
 ### Quotes
 Adds or Removes a quote from the bot
 Gets a random quote, specific quote, or lists all quotes
-### Twitch
-Adds or removes a Twitch streamer from the database or shows all streamers
 ### Stats
 Show information on the server or on a specific user from their user id or mention
+### Twitch
+Adds or removes a Twitch streamer from the database or shows all streamers
 
 [Back To The Top](#Immature-Bot-V2)
 
