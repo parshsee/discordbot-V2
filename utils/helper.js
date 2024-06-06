@@ -420,6 +420,7 @@ const birthdayChecker = async (client) => {
 
 const eventsChcker = async (client) => {
 	// Loop through all the guilds the bot is in
+	// *** IN DEV SERVER: Logs will show multiple guilds since the bot is in actual servers and Test Servers ***
 	client.guilds.cache.forEach(guild => {
 		// guild is th Guild object from Discord
 		// https://discord.js.org/#/docs/discord.js/main/class/Guild
