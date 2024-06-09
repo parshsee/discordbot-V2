@@ -29,7 +29,7 @@ const exportedMethods = {
 		// Calls the birthday db, to check if any birthday is active (if it is, it will send a message to the corresponding guild 'general' channel)
 		// 1000 = 1 sec, 10000 = 10 sec, 60000 = 1 minute, 3600000 = 1 hour, 86400000 = 24 hours
 		// Sets an interval of milliseconds, to run the birthdayChecker code
-		// ScheduleJob uses cron format to run everyday (0-6), at 12:00:00 
+		// ScheduleJob uses cron format to run everyday (0-6), at 12:00:00
 		scheduleJob('00 00 12 * * 0-6', async () => helper.birthdayChecker(client));
 		console.log('Birthday Checker	:	Created');
 
