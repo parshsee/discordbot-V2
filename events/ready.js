@@ -22,14 +22,14 @@ const exportedMethods = {
 		// Calls the streamer db, to check if any streamer is active (if it is, it will send a message to the corresponding guild 'live-promotions' channel)
 		scheduleJob('*/1 * * * *', async () => helper.streamChecker(client));
 		console.log('Streamer Checker	:	Created');
-		// Set to run once a day at 8:00:00 everyday (0-6) ---- AWS Lightsail Server is 4 hours ahead, so 12:00pm servertime is 8:00 local time
+		// Set to run once a day at 8:00:00 everyday (0-6)
 		// Calls the Discord ScheduledEvents, to check if any events are upcoming (if it is, it will send a message to the corresponding guild 'reminder' channel)
-		scheduleJob('00 00 12 * * 0-6', async () => helper.eventsChcker(client));
+		scheduleJob('00 00 8 * * 0-6', async () => helper.eventsChcker(client));
 		console.log('Events Checker		:	Created');
 		// Calls the birthday db, to check if any birthday is active (if it is, it will send a message to the corresponding guild 'general' channel)
 		// 1000 = 1 sec, 10000 = 10 sec, 60000 = 1 minute, 3600000 = 1 hour, 86400000 = 24 hours
 		// Sets an interval of milliseconds, to run the birthdayChecker code
-		// ScheduleJob uses cron format to run everyday (0-6), at 12:00:00 ---- AWS Lightsail Server is 4 hours ahead, so 12:00pm servertime is 8:00 local time
+		// ScheduleJob uses cron format to run everyday (0-6), at 12:00:00 
 		scheduleJob('00 00 12 * * 0-6', async () => helper.birthdayChecker(client));
 		console.log('Birthday Checker	:	Created');
 
